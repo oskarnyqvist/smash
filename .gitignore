@@ -1,0 +1,41 @@
+# Bytecode and cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Packaging and distribution
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# VS Code / IDE
+.vscode/
+.idea/
+*.swp
+
+# Smash project files
+.smash/runlog.json
+.smash/__pycache__/
+.smash/*.pyc
+
+# Test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs and local output
+*.log
+*.tmp
+*.bak
+
+# OS-specific
+.DS_Store
+Thumbs.db
