@@ -6,7 +6,7 @@ Each directory includes a `smashlet.py` file that specifies how files within tha
 
 ---
 
-### Why Smash?
+### Problem
 
 Make is powerful but often unintuitive. A distributed approach lets you understand individual parts of the system without needing to read and comprehend the entire build.
 
@@ -18,7 +18,7 @@ Smash is useful when you prefer to colocate build logic alongside the files it o
 
 ---
 
-### How it Works
+### How Smash Works
 
 Smash locates `smashlet.py` files within your project's directories. Each smashlet defines how the files in its own directory are transformed.
 
@@ -120,7 +120,7 @@ Smash is designed for structured content workflows where build logic benefits fr
 
 ---
 
-### Contributing and Philosophy
+### Philosophy and Contributing
 
 Smash prioritizes simplicity and clarity. Every directory describes its own build logic independently, eliminating reliance on global configuration or shared state.
 
