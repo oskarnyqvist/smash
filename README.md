@@ -208,6 +208,46 @@ Each smashlet is discoverable, isolated, and self-contained.
 
 ---
 
+### 🪄 **📁 Injecting a `context/` Folder**
+
+Add this new section under **"Shared Project Logic with `smash.py`"**:
+
+---
+
+```md
+### Injecting a `context/` Folder
+
+If your project root includes a `context/` folder, all files inside are automatically made available in the build `context`.
+
+These are injected as:
+
+```python
+context["context_files"]  # dict[str, Path]
+```
+
+Each key is the filename, and the value is a `Path` object you can read or parse. This is useful for colocated prompts, configs, or metadata.
+
+Example usage in a smashlet:
+
+```python
+import json
+
+def run(context):
+    config = json.loads(context["context_files"]["config.json"].read_text())
+    ...
+```
+
+Or define a helper in `smash.py`:
+
+```python
+def read_context_json(context, filename):
+    import json
+    return json.loads(context["context_files"][filename].read_text())
+```
+
+Only files (not subdirectories) are included, and hidden files are skipped.
+```
+
 ### Use Cases
 
 Smash is designed for structured content workflows, such as:

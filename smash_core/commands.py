@@ -13,6 +13,13 @@ from .smashlets import (
 )
 
 
+# Optional helper for accessing JSON configs in context/
+def read_context_json(context, filename):
+    import json
+
+    return json.loads(context["context_files"][filename].read_text())
+
+
 def run_init():
     """
     Create a new Smash project by making a `.smash/` directory.
@@ -51,6 +58,18 @@ def run_build():
         "project_root": project_root,
     }
 
+    # 📁 Inject context/ files if they exist
+    context_dir = project_root / "context"
+    if context_dir.exists() and context_dir.is_dir():
+        context_files = {
+            f.name: f
+            for f in context_dir.iterdir()
+            if f.is_file() and not f.name.startswith(".")
+        }
+        context["context_files"] = context_files
+
+    # 📦 Optional: Load smash.py if present
+    smash_py = project_root / "smash.py"
     # Try to import smash.py if it exists
     smash_py = project_root / "smash.py"
     if smash_py.exists():
