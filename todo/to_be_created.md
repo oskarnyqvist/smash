@@ -3,3 +3,4 @@
 * add a force flag to run all, or specific smashlet
 * change the tasks into data files, json or python, with a priorty so we can output them in better order wheil bilding TODO.
 * move todo to root folder
+* updated file does not work as a marker if its time to run as when you are makeing updates you want it reload. 
