@@ -246,7 +246,7 @@ def read_context_json(context, filename):
 ```
 
 Only files (not subdirectories) are included, and hidden files are skipped.
-```
+
 
 ### Use Cases
 
