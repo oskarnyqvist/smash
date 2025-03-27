@@ -1,8 +1,8 @@
 # Smash
 
-Smash is a build system for content. It enables you to define, using plain Python, how files in each directory should be transformed into outputs—without requiring global configuration, dependency graphs, or custom formats.
+Smash is a build system for content. It enables you to define, using plain Python, how files in each directory should be transformed into outputs — without requiring global configuration, dependency graphs, or custom formats.
 
-Each directory includes a `smashlet.py` file that specifies how files within that directory are processed. Smash automatically discovers and runs these smashlets.
+Each directory can include one or more `smashlet_*.py` files that describe how files within that directory should be processed. Smash automatically discovers and runs these smashlets in a predictable and isolated way.
 
 ---
 
@@ -14,23 +14,23 @@ Workflow engines like Luigi or Airflow excel at orchestrating complex pipelines.
 
 Static site generators primarily target websites and often enforce templating or layout assumptions. Smash focuses purely on transforming and assembling content and data, free from layout or templating constraints.
 
-Smash is useful when you prefer to colocate build logic alongside the files it operates on—using plain Python, without central configuration or intricate dependency tracking.
+Smash is useful when you prefer to colocate build logic alongside the files it operates on — using plain Python, without central configuration or intricate dependency tracking.
 
 ---
 
 ### How Smash Works
 
-Smash locates `smashlet.py` files within your project's directories. Each smashlet defines how the files in its own directory are transformed.
+Smash locates one or more `smashlet_*.py` files within your project's directories. Each smashlet defines how the files in its own directory should be transformed.
 
-A `smashlet.py` contains:
+A smashlet file contains:
 
 - `INPUT_GLOB`: a glob pattern specifying input files (e.g., `"*.md"`)
 - `OUTPUT_DIR`: the directory where output files are placed
-- `run()`: a Python function that performs the file transformation
+- `run()`: a Python function that performs the transformation
 
-Smash traverses the project directories, finds all smashlets, and executes them in order based on their modification times (oldest first). After executing a smashlet, Smash automatically updates its timestamp. This process repeats until all smashlets are up-to-date.
+Smash traverses the project directories, finds all smashlets, and executes them in order based on modification time (oldest first). After executing a smashlet, Smash updates its timestamp. This process repeats until all smashlets are up-to-date.
 
-Each smashlet operates independently. There is no central build configuration or dependency graph—every smashlet contains the entirety of the information it requires.
+Each smashlet operates independently. There is no central build configuration or dependency graph — every smashlet contains the entirety of the information it requires.
 
 ---
 
@@ -40,47 +40,46 @@ Smash isn't trying to replace existing tools — it's addressing a different kin
 
 #### 🛠️ Make
 
-Make is powerful and well-established, especially for compiling code. But as projects grow, Makefiles can become hard to read and maintain.
+- Global logic in Makefiles
+- Hard to reason about in large projects
+- Small changes can have wide ripple effects
 
-- Logic is centralized in a global file
-- Understanding one part often requires understanding the whole
-- Small changes can have unexpected global effects
-
-Smash takes a distributed approach: each directory contains its own logic, in plain Python, with no global dependencies.
+Smash: Distributed, explicit, file-scoped logic.
 
 #### 🔁 Luigi / Airflow
 
-Tools like Luigi and Airflow are designed for large-scale pipelines with task dependencies and scheduling.
+- Ideal for scheduled DAGs and complex pipelines
+- Heavyweight for simple local builds
+- Requires lots of boilerplate and infra
 
-- Best suited for DAGs and batch jobs
-- Requires boilerplate and configuration for each task
-- Overhead isn't justified for small, local workflows
-
-Smash is aimed at simple, file-based transformations that live close to the content being processed.
+Smash: Lightweight, local-first, no orchestrator.
 
 #### 🌐 Static Site Generators
 
-Static site generators (e.g., Jekyll, Hugo, Astro) are great for building websites — but they assume a web-focused output.
+- Great for websites, less so for general content workflows
+- Built-in assumptions about routing, layout, templates
 
-- Templating and layout are built-in
-- File structure is tied to routing
-- Data and content are secondary to rendering
-
-Smash doesn’t assume you’re building a website. It just helps you go from one kind of file to another, in a structure that you define.
+Smash: No assumptions. Just code and files.
 
 ---
 
 ### Basic Usage
 
-Initialize a new Smash project:
+Start a new Smash project:
 
 ```bash
 smash init
 ```
 
-This command creates a `.smash/` directory, marking the root of your project.
+````
 
-Add a `smashlet.py` file in each directory you want to define transformations.
+This creates a `.smash/` directory at the root of your project.
+
+Then create one or more smashlets in a content directory:
+
+```bash
+touch content/smashlet_render.py
+```
 
 Run Smash:
 
@@ -88,21 +87,18 @@ Run Smash:
 smash
 ```
 
-Smash searches for all `smashlet.py` files from the project root, sorts them by modification time, and executes them in sequence. If any smashlet runs, the process repeats until no further transformations are needed.
+Smash scans for all `smashlet*.py` files and runs them in modification order. It repeats until no further changes are detected.
 
 ---
 
 ### Smashlet Structure
 
-A `smashlet.py` file defines how files in its directory should be processed. The structure is straightforward:
-
-- `INPUT_GLOB`: selects input files using glob patterns
-- `OUTPUT_DIR`: specifies where output files will be stored
-- `run()`: defines the transformation logic
+Each smashlet file defines how files in its directory are processed. You can use a single `smashlet.py` for simple cases, or define multiple named files like `smashlet_clean.py`, `smashlet_render.py`, etc.
 
 Example:
 
 ```python
+# smashlet_render.py
 INPUT_GLOB = "*.md"
 OUTPUT_DIR = "dist/"
 
@@ -120,22 +116,43 @@ def run():
         out_path.write_text(html)
 ```
 
-Smash determines if a smashlet should run by comparing the modification times of its input files to the smashlet itself. After the `run()` function completes, Smash updates the smashlet's timestamp automatically.
+Smash determines whether to run a smashlet by comparing the modification times of its inputs to the smashlet file itself.
+
+---
+
+### Multiple Smashlets in One Directory
+
+You can define multiple independent transformation steps in a single directory using the `smashlet_<name>.py` naming convention:
+
+```plaintext
+docs/
+├── smashlet_clean.py     # Removes comments or metadata
+├── smashlet_render.py    # Converts cleaned content to HTML
+```
+
+Each smashlet is:
+
+- Executed independently
+- Tracked in the runlog separately
+- Re-run only when inputs change or `RUN = "always"` is set
+
+This makes it easy to compose and layer transformations locally, without needing global configuration or DAGs.
 
 ---
 
 ### Shared Project Logic with `smash.py`
 
-Smash supports an optional `smash.py` file in the root of your project. This file can be used for two things:
+Smash supports an optional `smash.py` file in your project root.
 
-1. **Project-wide configuration and lifecycle hooks**
-2. **Reusable helper functions** that can be imported in your smashlets
+This file can:
 
-### Example `smash.py`
+- Store project-wide `config` values (available via context)
+- Provide an `on_context()` hook to modify context before execution
+- Export helper functions to import in your smashlets
+
+Example `smash.py`:
 
 ```python
-# smash.py (in project root)
-
 config = {
     "env": "production",
     "default_output": "dist/",
@@ -145,7 +162,6 @@ def on_context(context):
     context["version"] = "1.2.3"
     return context
 
-# Utility functions usable in smashlets
 def glob_from_root(pattern):
     from pathlib import Path
     return list((Path(__file__).parent / "").glob(pattern))
@@ -155,7 +171,7 @@ def read_json(path):
     return json.loads(path.read_text())
 ```
 
-### In a smashlet:
+In a smashlet:
 
 ```python
 from smash import glob_from_root, read_json
@@ -164,60 +180,64 @@ def run(context):
     files = glob_from_root("data/**/*.json")
     for f in files:
         data = read_json(f)
-        # ... process data
+        # ... transform or merge content
 ```
-
-This approach keeps logic explicit, modular, and idiomatic. You can share config, helpers, and utilities across smashlets without global config files or complex imports.
 
 ---
 
 ## Project Layout Example
 
-```
+```plaintext
 myproject/
-├── .smash/                  # Created by `smash init`
+├── .smash/                 # Created by `smash init`
 ├── content/
 │   ├── pages/
 │   │   ├── 001.md
 │   │   ├── 002.md
-│   │   └── smashlet.py      # Transforms .md files into HTML
+│   │   ├── smashlet_clean.py
+│   │   └── smashlet_render.py
 │   └── data/
 │       ├── part1.json
 │       ├── part2.json
-│       └── smashlet.py      # Combines JSON files
-└── smash                    # CLI executable
+│       └── smashlet.py     # Still supported for single-step
+├── smash.py                # Project-wide config + helpers
+└── smash                   # CLI entry point
 ```
 
-Each directory with a `smashlet.py` independently defines its transformation logic. Smash identifies and executes these smashlets automatically.
+Each smashlet is discoverable, isolated, and self-contained.
 
 ---
 
 ### Use Cases
 
-Smash is designed for structured content workflows where build logic benefits from colocation with the content itself. Common scenarios include:
+Smash is designed for structured content workflows, such as:
 
-- Generating structured documentation from multiple source fragments
-- Rendering diagrams from `.dot` or `.plantuml` files stored across directories
-- Merging content files into language-specific or region-specific outputs
-- Creating structured data files for API endpoints or LLM input pipelines
+- Generating documentation from markdown and code
+- Rendering diagrams from `.dot`, `.svg`, or `.plantuml` sources
+- Merging data files into language- or region-specific outputs
+- Producing LLM-ready prompts, datasets, or embeddings
+- Collocating content logic with the content it transforms
 
 ---
 
 ### Philosophy and Contributing
 
-Smash prioritizes simplicity and clarity. Every directory describes its own build logic independently, eliminating reliance on global configuration or shared state.
+Smash prioritizes:
 
-Key principles:
+- 📦 Locality over global config
+- ✨ Predictability over cleverness
+- 🤖 Clarity for humans and LLMs
+- 💡 Self-contained transformation units
+- 🧱 Build logic that lives with the content it serves
 
-- No central dependency management
-- No global build configuration
-- No assumptions about content structure or output
-- No enforced metadata formats or naming conventions
+No DAGs. No YAMLs. No runtime magic.
 
-Contributions are welcome, particularly improvements to CLI usability, handling of edge cases, and reusable utilities for common transformations.
+Contributions are welcome — especially around CLI UX, new helper utilities, and plugins for other file types or workflows.
 
 ---
 
 ### License
 
 MIT
+
+````
