@@ -49,7 +49,7 @@ Smash: Distributed, explicit, file-scoped logic.
 #### 🔁 Luigi / Airflow
 
 - Ideal for scheduled DAGs and complex pipelines
-- Heavyweight for simple local builds
+- Heavyweight for si````mple local builds
 - Requires lots of boilerplate and infra
 
 Smash: Lightweight, local-first, no orchestrator.
@@ -71,7 +71,7 @@ Start a new Smash project:
 smash init
 ```
 
-````
+
 
 This creates a `.smash/` directory at the root of your project.
 
@@ -280,4 +280,4 @@ Contributions are welcome — especially around CLI UX, new helper utilities, an
 
 MIT
 
-````
+

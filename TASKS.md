@@ -63,5 +63,3 @@ Helps users understand what Smash is going to do before it builds. Useful for de
 - `[Test]` — test coverage or fixtures
 - `[Infra]` — CI, packaging, structure
 - `[Docs]` — updates to README, examples, templates
-
----
