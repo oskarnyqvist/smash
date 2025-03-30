@@ -62,6 +62,7 @@ def should_run(smashlet_path, project_root):
     Based on:
     - RUN mode (default: if_changed)
     - File and input modification timestamps
+    - Optional explicit output file tracking
     - Runlog tracking of last successful execution
     - Optional RUN_TIMEOUT for "always" smashlets
     """
@@ -89,8 +90,28 @@ def should_run(smashlet_path, project_root):
         return False
 
     input_files = list(smashlet_path.parent.glob(input_glob))
-    files_to_check = input_files + [smashlet_path]
 
+    # --- Optional output tracking ---
+    outputs = []
+    if hasattr(mod, "get_outputs"):
+        outputs = mod.get_outputs()
+    elif hasattr(mod, "OUTPUT_FILES"):
+        outputs = [Path(p) for p in mod.OUTPUT_FILES]
+
+    if outputs:
+        # Rerun if any output is missing
+        if any(not out.exists() for out in outputs):
+            return True
+
+        latest_output_mtime = max(out.stat().st_mtime for out in outputs)
+        latest_input_mtime = max(
+            [f.stat().st_mtime for f in input_files] + [smashlet_path.stat().st_mtime]
+        )
+
+        return latest_input_mtime > latest_output_mtime
+
+    # Fallback to runlog-based logic
+    files_to_check = input_files + [smashlet_path]
     return any(f.stat().st_mtime > last_run for f in files_to_check)
 
 

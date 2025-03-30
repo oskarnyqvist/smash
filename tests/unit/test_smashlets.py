@@ -2,7 +2,6 @@
 
 import os
 import time
-
 from smash_core.smashlets import discover_smashlets, touch, should_run
 
 
@@ -44,11 +43,9 @@ def test_touch_updates_mtime(tmp_path):
 def test_should_run_when_input_is_newer(tmp_path):
     os.chdir(tmp_path)
 
-    # Create an input file
     input_file = tmp_path / "file.md"
     input_file.write_text("hello")
 
-    # Smashlet with glob and run()
     smashlet = tmp_path / "smashlet_test.py"
     smashlet.write_text("""
 INPUT_GLOB = "*.md"
@@ -57,38 +54,10 @@ OUTPUT_DIR = "dist/"
 def run():
     return 1
 """)
-
-    time.sleep(1)  # ensure the input is newer
+    time.sleep(1)
     input_file.touch()
 
     assert should_run(smashlet, tmp_path) is True
-
-
-def test_should_not_run_if_input_is_older(tmp_path):
-    os.chdir(tmp_path)
-
-    # Create input + smashlet
-    input_file = tmp_path / "file.md"
-    input_file.write_text("old")
-
-    smashlet = tmp_path / "smashlet_test.py"
-    smashlet.write_text("""
-INPUT_GLOB = "*.md"
-OUTPUT_DIR = "dist/"
-def run(): return 1
-""")
-
-    # Make sure their mtimes are in the past
-    time.sleep(1)
-
-    # Simulate a prior successful run AFTER both files
-    from smash_core.project import update_runlog
-
-    smash_dir = tmp_path / ".smash"
-    smash_dir.mkdir()
-    update_runlog(tmp_path, smashlet)
-
-    assert should_run(smashlet, tmp_path) is False
 
 
 def test_should_not_run_if_run_missing(tmp_path):
@@ -98,7 +67,85 @@ def test_should_not_run_if_run_missing(tmp_path):
     smashlet.write_text("""
 INPUT_GLOB = "*.txt"
 OUTPUT_DIR = "out/"
-# No run() defined
+""")
+    assert should_run(smashlet, tmp_path) is False
+
+
+def test_should_run_if_output_missing(tmp_path):
+    os.chdir(tmp_path)
+
+    input_file = tmp_path / "input.txt"
+    input_file.write_text("data")
+
+    smashlet = tmp_path / "smashlet_track.py"
+    smashlet.write_text("""
+from pathlib import Path
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "dist"
+
+def get_outputs():
+    return [Path("dist/out.html")]
+
+def run():
+    return 1
 """)
 
+    assert should_run(smashlet, tmp_path) is True
+
+
+def test_should_not_run_if_outputs_up_to_date(tmp_path):
+    os.chdir(tmp_path)
+
+    input_file = tmp_path / "input.txt"
+    input_file.write_text("data")
+    time.sleep(1)
+
+    out_file = tmp_path / "dist"
+    out_file.mkdir()
+    out_path = out_file / "out.html"
+    out_path.write_text("old output")
+
+    smashlet = tmp_path / "smashlet_static.py"
+    smashlet.write_text("""
+from pathlib import Path
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "dist"
+
+def get_outputs():
+    return [Path("dist/out.html")]
+
+def run():
+    return 1
+""")
+    time.sleep(1)
+    out_path.touch()
     assert should_run(smashlet, tmp_path) is False
+
+
+def test_should_run_if_input_newer_than_output(tmp_path):
+    os.chdir(tmp_path)
+
+    input_file = tmp_path / "input.txt"
+    input_file.write_text("data")
+
+    out_dir = tmp_path / "dist"
+    out_dir.mkdir()
+    out_file = out_dir / "out.html"
+    out_file.write_text("old")
+    time.sleep(1)
+    input_file.touch()
+
+    smashlet = tmp_path / "smashlet_input_newer.py"
+    smashlet.write_text("""
+from pathlib import Path
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "dist"
+
+def get_outputs():
+    return [Path("dist/out.html")]
+
+def run():
+    return 1
+""")
+
+    assert should_run(smashlet, tmp_path) is True

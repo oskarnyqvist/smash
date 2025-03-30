@@ -114,7 +114,83 @@ def run():
         out_path.write_text(html)
 ```
 
-Smash determines whether to run a smashlet by comparing the modification times of its inputs to the smashlet file itself.
+### 🧠 Explicit Output Tracking (Optional)
+
+Smashlets can optionally define the exact output files they generate. This allows Smash to skip the smashlet more intelligently by comparing input vs. output modification times.
+
+This is useful when:
+
+- Outputs don’t follow a predictable naming pattern
+- You want precise rebuild logic
+- You plan to use future features like `smash clean` or dry-run diffs
+
+You can declare outputs in two ways:
+
+#### 1. `get_outputs()`: preferred for dynamic or computed outputs
+
+```python
+from pathlib import Path
+
+def get_outputs():
+    return [
+        Path("dist/index.html"),
+        Path("dist/data.json"),
+    ]
+```
+
+#### 2. `OUTPUT_FILES`: simple list of paths
+
+```python
+OUTPUT_FILES = [
+    "dist/index.html",
+    "dist/data.json",
+]
+```
+
+If either is present, Smash will:
+
+- Skip the smashlet if **all outputs exist and are newer** than inputs
+- Otherwise, it will re-run
+
+If neither is defined, fallback logic applies:  
+Smash uses the runlog timestamp and compares inputs + the smashlet file as before.
+
+````
+
+---
+
+## ✅ 2. **Test Plan**
+
+We’ll add the following to `tests/unit/test_smashlets.py`:
+
+```python
+def test_should_run_if_output_missing(tmp_path):
+    os.chdir(tmp_path)
+
+    # Create input + smashlet with get_outputs
+    input_file = tmp_path / "data.txt"
+    input_file.write_text("input")
+
+    smashlet = tmp_path / "smashlet_track.py"
+    smashlet.write_text(\"\"\"
+from pathlib import Path
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "dist"
+
+def get_outputs():
+    return [Path("dist/out.html")]
+
+def run():
+    return 1
+\"\"\")
+
+    assert should_run(smashlet, tmp_path) is True  # output does not exist yet
+````
+
+Also adding:
+
+- `test_should_not_run_if_outputs_up_to_date()`
+- `test_should_run_if_input_newer_than_output()`
 
 ---
 
