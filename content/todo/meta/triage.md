@@ -2,14 +2,12 @@
 
 These should likely be tackled first. They fix **real problems** or unlock meaningful behavior:
 
-| Task                                | Why                                                                  |
-| ----------------------------------- | -------------------------------------------------------------------- |
-| ✅ `fix_smashlet_mtime_tracking.md` | Prevents false skips when editing smashlets. Critical for usability. |
-| ✅ `explicit_output_tracking.md`    | Enables more accurate run decisions and future clean/diff logic.     |
-| ✅ `add_context_file_support.md`    | Fundamental to enabling structured, local context.                   |
-| ✅ `context_folder_support.md`      | Necessary to align context with locality principle.                  |
-| ✅ `inject_inputs_in_context.md`    | Reduces boilerplate; complements above.                              |
-| ✅ `tests_cli.md`                   | Ensures all the above changes are safe and prevent regressions.      |
+| Task                             | Why                                                             |
+| -------------------------------- | --------------------------------------------------------------- |
+| ✅ `add_context_file_support.md` | Fundamental to enabling structured, local context.              |
+| ✅ `context_folder_support.md`   | Necessary to align context with locality principle.             |
+| ✅ `inject_inputs_in_context.md` | Reduces boilerplate; complements above.                         |
+| ✅ `tests_cli.md`                | Ensures all the above changes are safe and prevent regressions. |
 
 > 🔁 These all touch or improve core Smash behavior. Start here.
 

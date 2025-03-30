@@ -1,8 +1,16 @@
 # tests/unit/test_smashlets.py
 
+import json
 import os
 import time
-from smash_core.smashlets import discover_smashlets, touch, should_run
+
+from smash_core.smashlets import discover_smashlets, run_smashlet, should_run, touch
+
+
+def write(ctx_path, name, content):
+    path = ctx_path / name
+    path.write_text(content)
+    return path
 
 
 def test_discover_smashlets_finds_expected_files(tmp_path):
@@ -149,3 +157,100 @@ def run():
 """)
 
     assert should_run(smashlet, tmp_path) is True
+
+
+def test_project_context_json_is_loaded(tmp_path):
+    os.chdir(tmp_path)
+    (tmp_path / ".smash").mkdir()
+
+    ctx_dir = tmp_path / "context"
+    ctx_dir.mkdir()
+    write(ctx_dir, "config.json", json.dumps({"version": "1.0"}))
+
+    smashlet = tmp_path / "smashlet_check.py"
+    smashlet.write_text("""
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "out"
+
+def run(context):
+    assert context["context"]["config"]["version"] == "1.0"
+    return 1
+""")
+    (tmp_path / "file.txt").write_text("data")
+
+    assert run_smashlet(smashlet, tmp_path, {"project_root": tmp_path}) is True
+
+
+def test_local_context_overrides_project_context(tmp_path):
+    os.chdir(tmp_path)
+    (tmp_path / ".smash").mkdir()
+
+    root_ctx = tmp_path / "context"
+    root_ctx.mkdir()
+    write(root_ctx, "config.json", json.dumps({"env": "prod"}))
+
+    smashlet_dir = tmp_path / "nested"
+    smashlet_dir.mkdir()
+    local_ctx = smashlet_dir / "context"
+    local_ctx.mkdir()
+    write(local_ctx, "config.json", json.dumps({"env": "local"}))
+
+    smashlet = smashlet_dir / "smashlet_override.py"
+    smashlet.write_text("""
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "out"
+
+def run(context):
+    assert context["context"]["config"]["env"] == "local"
+    return 1
+""")
+    (smashlet_dir / "file.txt").write_text("content")
+
+    assert run_smashlet(smashlet, tmp_path, {"project_root": tmp_path}) is True
+
+
+def test_txt_file_is_loaded_into_context(tmp_path):
+    os.chdir(tmp_path)
+    (tmp_path / ".smash").mkdir()
+
+    ctx_dir = tmp_path / "context"
+    ctx_dir.mkdir()
+    write(ctx_dir, "note.txt", "hello world")
+
+    smashlet = tmp_path / "smashlet_note.py"
+    smashlet.write_text("""
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "out"
+
+def run(context):
+    assert context["context"]["note"] == "hello world"
+    return 1
+""")
+    (tmp_path / "file.txt").write_text("ok")
+
+    assert run_smashlet(smashlet, tmp_path, {"project_root": tmp_path}) is True
+
+
+def test_unsupported_file_is_in_context_files_only(tmp_path):
+    os.chdir(tmp_path)
+    (tmp_path / ".smash").mkdir()
+
+    ctx_dir = tmp_path / "context"
+    ctx_dir.mkdir()
+    unsupported = write(ctx_dir, "binary.dat", b"1234".decode("utf-8"))
+
+    smashlet = tmp_path / "smashlet_bin.py"
+    smashlet.write_text("""\
+from pathlib import Path
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "out"
+
+def run(context):
+    assert "binary.dat" in context["context_files"]
+    assert isinstance(context["context_files"]["binary.dat"], Path)
+    return 1
+""")
+
+    (tmp_path / "file.txt").write_text("trigger")
+
+    assert run_smashlet(smashlet, tmp_path, {"project_root": tmp_path}) is True

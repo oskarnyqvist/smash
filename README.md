@@ -147,52 +147,50 @@ OUTPUT_FILES = [
 ]
 ```
 
-If either is present, Smash will:
+### 🧠 Local and Project-Level Context Support
 
-- Skip the smashlet if **all outputs exist and are newer** than inputs
-- Otherwise, it will re-run
+Smashlets can automatically receive config or metadata from JSON, YAML, or TXT files.
 
-If neither is defined, fallback logic applies:  
-Smash uses the runlog timestamp and compares inputs + the smashlet file as before.
+Smash scans two locations for contextual data:
 
-````
+1. `context/` or `context.json` in the **project root**
+2. `context/` or `context.json` in the **smashlet’s directory**
+
+All found data is injected into:
+
+- `context["context"]` → a merged dictionary of loaded values
+- `context["context_files"]` → raw `Path` objects for each file
 
 ---
 
-## ✅ 2. **Test Plan**
+#### Supported Files
 
-We’ll add the following to `tests/unit/test_smashlets.py`:
+| Extension | Behavior                         |
+| --------- | -------------------------------- |
+| `.json`   | Parsed with `json.loads()`       |
+| `.yaml`   | Parsed if PyYAML is available    |
+| `.txt`    | Read as plain text               |
+| other     | Included in `context_files` only |
+
+---
+
+#### Precedence & Merging
+
+- Project context is loaded first
+- Smashlet-local context overrides any conflicting keys
+- Multiple files are shallow-merged by filename stem
+
+---
+
+#### Example
 
 ```python
-def test_should_run_if_output_missing(tmp_path):
-    os.chdir(tmp_path)
+def run(context):
+    config = context["context"]["config"]
+    prompt = context["context_files"]["prompt.txt"].read_text()
+```
 
-    # Create input + smashlet with get_outputs
-    input_file = tmp_path / "data.txt"
-    input_file.write_text("input")
-
-    smashlet = tmp_path / "smashlet_track.py"
-    smashlet.write_text(\"\"\"
-from pathlib import Path
-INPUT_GLOB = "*.txt"
-OUTPUT_DIR = "dist"
-
-def get_outputs():
-    return [Path("dist/out.html")]
-
-def run():
-    return 1
-\"\"\")
-
-    assert should_run(smashlet, tmp_path) is True  # output does not exist yet
-````
-
-Also adding:
-
-- `test_should_not_run_if_outputs_up_to_date()`
-- `test_should_run_if_input_newer_than_output()`
-
----
+This allows colocated prompts, configs, keys, or any metadata without manual file parsing.
 
 ### Multiple Smashlets in One Directory
 

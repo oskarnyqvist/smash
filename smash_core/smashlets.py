@@ -6,6 +6,7 @@
 import importlib.util
 import sys
 import time
+import json
 from pathlib import Path
 from .project import get_runlog, update_runlog
 
@@ -53,6 +54,50 @@ def load_smashlet_module(path):
     except Exception as e:
         print(f"❌ Failed to load {path}: {e}")
         return None
+
+
+def load_context_data(context_dir):
+    """
+    Load context files from a directory or context.json file.
+    Returns a tuple: (merged_dict, raw_path_dict)
+    """
+    merged = {}
+    paths = {}
+
+    if context_dir.is_file() and context_dir.name.endswith(".json"):
+        try:
+            merged = json.loads(context_dir.read_text())
+            paths[context_dir.name] = context_dir
+        except Exception:
+            pass
+        return merged, paths
+
+    if not context_dir.exists():
+        return merged, paths
+
+    if context_dir.is_dir():
+        for f in context_dir.iterdir():
+            if f.name.startswith(".") or not f.is_file():
+                continue
+
+            paths[f.name] = f
+
+            try:
+                if f.suffix == ".json":
+                    merged[f.stem] = json.loads(f.read_text())
+                elif f.suffix in [".yml", ".yaml"]:
+                    try:
+                        import yaml
+
+                        merged[f.stem] = yaml.safe_load(f.read_text())
+                    except ImportError:
+                        pass
+                elif f.suffix == ".txt":
+                    merged[f.stem] = f.read_text()
+            except Exception:
+                continue
+
+    return merged, paths
 
 
 def should_run(smashlet_path, project_root):
@@ -115,7 +160,7 @@ def should_run(smashlet_path, project_root):
     return any(f.stat().st_mtime > last_run for f in files_to_check)
 
 
-def run_smashlet(path, project_root, context):
+def run_smashlet(path, project_root, base_context):
     """
     Execute a smashlet's run() function, with optional context injection.
 
@@ -135,8 +180,20 @@ def run_smashlet(path, project_root, context):
         import inspect
 
         cwd = path.parent
+        context = dict(base_context)
         context["cwd"] = cwd
-        context["project_root"] = project_root
+
+        local_ctx_dir = cwd / "context"
+        local_ctx_json = cwd / "context.json"
+
+        local_context, local_files = load_context_data(local_ctx_dir)
+        if local_ctx_json.exists():
+            ctx_json, files_json = load_context_data(local_ctx_json)
+            local_context.update(ctx_json)
+            local_files.update(files_json)
+
+        context.setdefault("context", {}).update(local_context)
+        context.setdefault("context_files", {}).update(local_files)
 
         sig = inspect.signature(run_func)
         if len(sig.parameters) == 1:
