@@ -27,7 +27,12 @@ def main():
     subparsers.add_parser("build", help="Run the build process")
 
     add_parser = subparsers.add_parser("add", help="Create a new smashlet_<name>.py")
-    add_parser.add_argument("name", help="Name of the smashlet (e.g., 'render')")
+    add_parser.add_argument(
+        "name",
+        nargs="?",
+        default=None,
+        help="Optional name for the smashlet (e.g., 'render'). If omitted, creates 'smashlet.py'.",
+    )
     add_parser.add_argument(
         "--glob", default="*", help="Input glob pattern (default: '*')"
     )

@@ -109,19 +109,22 @@ def run_build():
             break
 
 
-def run_add_smashlet(name, glob="*", output="dist/", context_mode=False):
+def run_add_smashlet(name=None, glob="*", output="dist/", context_mode=False):
     """
-    Create a new `smashlet_<name>.py` file with boilerplate contents.
+    Create a new smashlet file with boilerplate contents.
 
     Args:
-        name (str): Smashlet name (e.g., 'render')
-        glob (str): INPUT_GLOB value
-        output (str): OUTPUT_DIR value
-        context_mode (bool): If True, generate run(context)
+        name (str or None): If provided, creates `smashlet_<name>.py`, else `smashlet.py`
     """
     from pathlib import Path
 
-    filename = f"smashlet_{name}.py"
+    if name:
+        filename = f"smashlet_{name}.py"
+        display_name = name
+    else:
+        filename = "smashlet.py"
+        display_name = "(unnamed)"
+
     path = Path.cwd() / filename
 
     if path.exists():
@@ -133,7 +136,7 @@ def run_add_smashlet(name, glob="*", output="dist/", context_mode=False):
 
     template = f'''# {filename}
 #
-# Smashlet: {name}
+# Smashlet: {display_name}
 # Auto-generated with `smash add`
 
 INPUT_GLOB = "{glob}"
