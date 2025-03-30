@@ -107,3 +107,41 @@ def run_build():
         if not ran_any:
             print(f"✅ Build complete in {iterations} pass(es)")
             break
+
+
+def run_add_smashlet(name, glob="*", output="dist/", context_mode=False):
+    """
+    Create a new `smashlet_<name>.py` file with boilerplate contents.
+
+    Args:
+        name (str): Smashlet name (e.g., 'render')
+        glob (str): INPUT_GLOB value
+        output (str): OUTPUT_DIR value
+        context_mode (bool): If True, generate run(context)
+    """
+    from pathlib import Path
+
+    filename = f"smashlet_{name}.py"
+    path = Path.cwd() / filename
+
+    if path.exists():
+        print(f"⚠️  {filename} already exists. Aborting.")
+        return
+
+    run_signature = "def run(context):" if context_mode else "def run():"
+    run_body = "    pass  # TODO: implement transformation logic"
+
+    template = f'''# {filename}
+#
+# Smashlet: {name}
+# Auto-generated with `smash add`
+
+INPUT_GLOB = "{glob}"
+OUTPUT_DIR = "{output}"
+
+{run_signature}
+{run_body}
+'''
+
+    path.write_text(template)
+    print(f"✅ Created {filename}")
