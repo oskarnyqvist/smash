@@ -61,7 +61,8 @@ def should_run(smashlet_path, project_root):
 
     Based on:
     - RUN mode (default: if_changed)
-    - File modification timestamps
+    - File and input modification timestamps
+    - Runlog tracking of last successful execution
     - Optional RUN_TIMEOUT for "always" smashlets
     """
     mod = load_smashlet_module(smashlet_path)
@@ -69,10 +70,10 @@ def should_run(smashlet_path, project_root):
         return False
 
     run_mode = getattr(mod, "RUN", "if_changed")
+    runlog = get_runlog(project_root)
+    last_run = runlog.get(str(smashlet_path), RUN_NEVER)
 
     if run_mode == "always":
-        runlog = get_runlog(project_root)
-        last_run = runlog.get(str(smashlet_path), RUN_NEVER)
         timeout = getattr(mod, "RUN_TIMEOUT", ONE_MINUTE)
         if timeout and (time.time() - last_run < timeout):
             print(f"⏳ Skipping {smashlet_path.name}: RUN_TIMEOUT not reached")
@@ -88,8 +89,9 @@ def should_run(smashlet_path, project_root):
         return False
 
     input_files = list(smashlet_path.parent.glob(input_glob))
-    smashlet_mtime = smashlet_path.stat().st_mtime
-    return any(f.stat().st_mtime > smashlet_mtime for f in input_files)
+    files_to_check = input_files + [smashlet_path]
+
+    return any(f.stat().st_mtime > last_run for f in files_to_check)
 
 
 def run_smashlet(path, project_root, context):

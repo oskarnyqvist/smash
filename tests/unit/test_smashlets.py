@@ -67,19 +67,26 @@ def run():
 def test_should_not_run_if_input_is_older(tmp_path):
     os.chdir(tmp_path)
 
-    # Input file is older than the smashlet
+    # Create input + smashlet
     input_file = tmp_path / "file.md"
     input_file.write_text("old")
-    time.sleep(1)
 
     smashlet = tmp_path / "smashlet_test.py"
     smashlet.write_text("""
 INPUT_GLOB = "*.md"
 OUTPUT_DIR = "dist/"
-
-def run():
-    return 1
+def run(): return 1
 """)
+
+    # Make sure their mtimes are in the past
+    time.sleep(1)
+
+    # Simulate a prior successful run AFTER both files
+    from smash_core.project import update_runlog
+
+    smash_dir = tmp_path / ".smash"
+    smash_dir.mkdir()
+    update_runlog(tmp_path, smashlet)
 
     assert should_run(smashlet, tmp_path) is False
 
