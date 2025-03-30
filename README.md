@@ -71,8 +71,6 @@ Start a new Smash project:
 smash init
 ```
 
-
-
 This creates a `.smash/` directory at the root of your project.
 
 Then create one or more smashlets in a content directory:
@@ -214,7 +212,7 @@ Add this new section under **"Shared Project Logic with `smash.py`"**:
 
 ---
 
-```md
+````md
 ### Injecting a `context/` Folder
 
 If your project root includes a `context/` folder, all files inside are automatically made available in the build `context`.
@@ -224,6 +222,7 @@ These are injected as:
 ```python
 context["context_files"]  # dict[str, Path]
 ```
+````
 
 Each key is the filename, and the value is a `Path` object you can read or parse. This is useful for colocated prompts, configs, or metadata.
 
@@ -246,7 +245,6 @@ def read_context_json(context, filename):
 ```
 
 Only files (not subdirectories) are included, and hidden files are skipped.
-
 
 ### Use Cases
 
@@ -276,8 +274,20 @@ Contributions are welcome — especially around CLI UX, new helper utilities, an
 
 ---
 
+### 🧭 Contributing Tasks or Features?
+
+Before starting work on a task or story, check out the [Task Analysis Protocol](STORY_CHECKLIST.md).
+
+It helps ensure every feature or fix is:
+
+- Clear in purpose
+- Minimal in scope
+- Aligned with Smash values
+
+Whether you're a developer or an LLM, this guide helps you ship the right thing.
+
+---
+
 ### License
 
 MIT
-
-

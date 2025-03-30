@@ -10,7 +10,19 @@ Smash is not just for humans — it's built to be safe for automation. That mean
 - Reasonable defaults and naming
 - Structure that allows any file to be understood and rewritten in isolation
 
-These guidelines do **not** repeat generic Python best practices. Instead, they capture what’s special about **how Smash works**, and how to contribute to it without breaking that simplicity.
+## These guidelines do **not** repeat generic Python best practices. Instead, they capture what’s special about **how Smash works**, and how to contribute to it without breaking that simplicity.
+
+## 🔍 Working on a Task?
+
+Before starting any implementation, review the [Task Analysis Protocol](STORY_CHECKLIST.md).
+
+This checklist helps both humans and LLMs:
+
+- Evaluate whether a task is clear, scoped, and aligned
+- Decide whether to continue, refine, split, or reject
+- Prevent wasted effort on vague or broken specs
+
+→ [See STORY_CHECKLIST.md 🧭](STORY_CHECKLIST.md)
 
 ---
 
