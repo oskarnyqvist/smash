@@ -64,10 +64,11 @@ You don’t need to cover every edge case — but confirm the behavior you just 
 ### Testing conventions:
 
 - Use `tmp_path` + `os.chdir()` to simulate real project dirs
-- Smashlets are usually written to disk as `.write_text(""" ... """)`
-- Always create `.smash/` when testing `run_smashlet()`
+- Write smashlets to disk as `.write_text(""" ... """)`
+- Always create a `.smash/` folder when testing `run_smashlet()`
+- ✅ **Important:** If your smashlet uses `Path`, `json`, etc — remember to include `from pathlib import Path` or other needed imports in the test fixture
 
-If your feature injects context, builds files, or adds outputs — test that too.
+This avoids runtime `NameError` when the test smashlet executes dynamically.
 
 ---
 

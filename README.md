@@ -27,6 +27,7 @@ A smashlet file contains:
 - `INPUT_GLOB`: a glob pattern specifying input files (e.g., `"*.md"`)
 - `OUTPUT_DIR`: the directory where output files are placed
 - `run()`: a Python function that performs the transformation
+- If using `run(context)`, matching input files are passed via `context["inputs"]`.
 
 Smash traverses the project directories, finds all smashlets, and executes them in order based on modification time (oldest first). After executing a smashlet, Smash updates its timestamp. This process repeats until all smashlets are up-to-date.
 
@@ -113,6 +114,16 @@ def run():
         out_path = Path(OUTPUT_DIR) / f.with_suffix(".html").name
         out_path.write_text(html)
 ```
+
+Smash will automatically resolve `INPUT_GLOB` and inject a list of matching files as `context["inputs"]` (if using `run(context)`):
+
+```python
+def run(context):
+    for f in context["inputs"]:
+        print(f.name)
+```
+
+This eliminates boilerplate in your smashlet and makes it easier to write LLM-friendly or reusable logic.
 
 ### 🧠 Explicit Output Tracking (Optional)
 

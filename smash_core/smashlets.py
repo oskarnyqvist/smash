@@ -183,6 +183,11 @@ def run_smashlet(path, project_root, base_context):
         context = dict(base_context)
         context["cwd"] = cwd
 
+        # ✅ Auto-inject glob-matched input files
+        input_glob = getattr(mod, "INPUT_GLOB", None)
+        if input_glob:
+            context["inputs"] = list(cwd.glob(input_glob))
+
         local_ctx_dir = cwd / "context"
         local_ctx_json = cwd / "context.json"
 

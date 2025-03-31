@@ -254,3 +254,46 @@ def run(context):
     (tmp_path / "file.txt").write_text("trigger")
 
     assert run_smashlet(smashlet, tmp_path, {"project_root": tmp_path}) is True
+
+
+def test_inputs_are_injected(tmp_path):
+    # Simulate a Smash project
+    project_root = tmp_path
+    os.chdir(project_root)
+    (project_root / ".smash").mkdir()
+
+    # Create input files
+    (project_root / "foo.txt").write_text("hello")
+    (project_root / "bar.txt").write_text("world")
+    (project_root / "ignore.md").write_text("nope")
+
+    # Create a smashlet that captures injected inputs
+    smashlet_path = project_root / "smashlet.py"
+    smashlet_path.write_text(
+        """
+from pathlib import Path        
+INPUT_GLOB = "*.txt"
+OUTPUT_DIR = "dist/"
+
+def run(context):
+    matched = sorted(f.name for f in context["inputs"])
+    out = "\\n".join(matched)
+    Path(OUTPUT_DIR).mkdir(exist_ok=True)
+    Path(OUTPUT_DIR + "/out.txt").write_text(out)
+    return 1
+"""
+    )
+
+    # Run the smashlet
+    result = run_smashlet(smashlet_path, project_root, {"project_root": project_root})
+
+    # Check it ran
+    assert result is True
+
+    # Check the output file was created and is correct
+    out_file = project_root / "dist" / "out.txt"
+    assert out_file.exists()
+    lines = out_file.read_text().splitlines()
+    assert "foo.txt" in lines
+    assert "bar.txt" in lines
+    assert "ignore.md" not in lines

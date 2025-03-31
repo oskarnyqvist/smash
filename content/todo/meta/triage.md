@@ -1,17 +1,3 @@
-## 🥇 Top Priority: Core Stability & Runtime Correctness
-
-These should likely be tackled first. They fix **real problems** or unlock meaningful behavior:
-
-| Task                             | Why                                                             |
-| -------------------------------- | --------------------------------------------------------------- |
-| ✅ `context_folder_support.md`   | Necessary to align context with locality principle.             |
-| ✅ `inject_inputs_in_context.md` | Reduces boilerplate; complements above.                         |
-| ✅ `tests_cli.md`                | Ensures all the above changes are safe and prevent regressions. |
-
-> 🔁 These all touch or improve core Smash behavior. Start here.
-
----
-
 ## 🥈 Second Tier: Dev + CLI Ergonomics
 
 These improve usability, feedback loops, or debugging clarity — great follow-ups once the core is solid.
