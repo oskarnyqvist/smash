@@ -43,6 +43,15 @@ def main():
         "--context", action="store_true", help="Use run(context) instead of run()"
     )
 
+    run_parser = subparsers.add_parser(
+        "run", help="Force run all or a specific smashlet"
+    )
+    run_parser.add_argument(
+        "smashlet_path",
+        nargs="?",
+        help="Optional path to a specific smashlet to force-run",
+    )
+
     args = parser.parse_args()
 
     if args.command == "init":
@@ -58,5 +67,9 @@ def main():
             output=args.output,
             context_mode=args.context,
         )
+    elif args.command == "run":
+        from .commands import run_force
+
+        run_force(args.smashlet_path)
     else:
         parser.print_help()

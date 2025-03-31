@@ -6,6 +6,8 @@ import time
 
 from smash_core.smashlets import discover_smashlets, run_smashlet, should_run, touch
 
+SLEEP_TIME = 0.1
+
 
 def write(ctx_path, name, content):
     path = ctx_path / name
@@ -40,7 +42,7 @@ def test_touch_updates_mtime(tmp_path):
     target.write_text("hello")
 
     original_mtime = target.stat().st_mtime
-    time.sleep(1)
+    time.sleep(SLEEP_TIME)
 
     touch(target)
     new_mtime = target.stat().st_mtime
@@ -62,7 +64,7 @@ OUTPUT_DIR = "dist/"
 def run():
     return 1
 """)
-    time.sleep(1)
+    time.sleep(SLEEP_TIME)
     input_file.touch()
 
     assert should_run(smashlet, tmp_path) is True
@@ -106,7 +108,7 @@ def test_should_not_run_if_outputs_up_to_date(tmp_path):
 
     input_file = tmp_path / "input.txt"
     input_file.write_text("data")
-    time.sleep(1)
+    time.sleep(SLEEP_TIME)
 
     out_file = tmp_path / "dist"
     out_file.mkdir()
@@ -125,7 +127,7 @@ def get_outputs():
 def run():
     return 1
 """)
-    time.sleep(1)
+    time.sleep(SLEEP_TIME)
     out_path.touch()
     assert should_run(smashlet, tmp_path) is False
 
@@ -140,7 +142,7 @@ def test_should_run_if_input_newer_than_output(tmp_path):
     out_dir.mkdir()
     out_file = out_dir / "out.html"
     out_file.write_text("old")
-    time.sleep(1)
+    time.sleep(SLEEP_TIME)
     input_file.touch()
 
     smashlet = tmp_path / "smashlet_input_newer.py"

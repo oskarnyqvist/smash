@@ -2,11 +2,11 @@
 
 These improve usability, feedback loops, or debugging clarity — great follow-ups once the core is solid.
 
-| Task                                                      | Why                                                                          |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| ✅ `add_run_command_for_force.md`                         | Enables debugging and manual control.                                        |
-| ✅ `status_command.md`                                    | Lets you inspect what will run and why.                                      |
-| ✅ `runlog_viewer_command.md`                             | Useful for understanding build history and skip logic.                       |
+| Task | Why |
+| ---- | --- |
+
+| ✅ `status_command.md` | Lets you inspect what will run and why. |
+| ✅ `runlog_viewer_command.md` | Useful for understanding build history and skip logic. |
 | ✅ `centralized_logging.md` + `replace_print_with_log.md` | Clean separation of logic and output — good for future formats or CLI flags. |
 
 > 🔧 Once runtime correctness is in place, these enhance DX and confidence.

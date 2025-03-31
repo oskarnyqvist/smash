@@ -90,6 +90,52 @@ Smash scans for all `smashlet*.py` files and runs them in modification order. It
 
 ---
 
+### 🛠 Force Re-running Smashlets
+
+Smash normally skips any smashlet that hasn’t changed since the last build.  
+You can override this with the `smash run` command:
+
+```bash
+# Default: only run smashlets with changed inputs
+smash
+
+# Force all smashlets to run, regardless of timestamps
+smash run
+
+# Run a specific smashlet directly
+smash run path/to/smashlet_render.py
+```
+
+This is useful when:
+
+- You're actively debugging a smashlet
+- You want to reprocess all data without touching inputs
+- You need full control over what runs
+
+The behavior is always deterministic — no DAG, no hidden order. Just local files, running in modification time order.
+
+````
+
+---
+
+### ✅ Insert under: `### Smashlet Structure` (near the `run()` explanation)
+
+Add this sentence after:
+
+> - `run()`: a Python function that performs the transformation
+
+```md
+The `run()` function can return:
+
+- `1` → to indicate that outputs changed (triggers a rebuild loop)
+- `0` or `None` → to indicate no changes (smashlet will be skipped next time)
+
+⚠️ If a smashlet always returns `1`, Smash will re-run it repeatedly.
+To prevent infinite loops, the build will stop after 10 iterations with an error.
+````
+
+---
+
 ### Smashlet Structure
 
 Each smashlet file defines how files in its directory are processed. You can use a single `smashlet.py` for simple cases, or define multiple named files like `smashlet_clean.py`, `smashlet_render.py`, etc.
