@@ -4,7 +4,6 @@ These should likely be tackled first. They fix **real problems** or unlock meani
 
 | Task                             | Why                                                             |
 | -------------------------------- | --------------------------------------------------------------- |
-| ✅ `add_context_file_support.md` | Fundamental to enabling structured, local context.              |
 | ✅ `context_folder_support.md`   | Necessary to align context with locality principle.             |
 | ✅ `inject_inputs_in_context.md` | Reduces boilerplate; complements above.                         |
 | ✅ `tests_cli.md`                | Ensures all the above changes are safe and prevent regressions. |
