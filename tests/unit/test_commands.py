@@ -1,9 +1,9 @@
 # tests/unit/test_commands.py
 
-import os
-from smash_core.commands import run_add_smashlet
 
-from smash_core.commands import run_build, run_force
+import os
+
+from smash_core.commands import run_add_smashlet, run_build, run_force
 
 SLEEP_TIME = 0.2
 
@@ -29,7 +29,7 @@ def test_add_creates_default_smashlet_py(tmp_path):
     file = tmp_path / "smashlet.py"
     assert file.exists()
     contents = file.read_text()
-    assert "Smashlet: (unnamed)" in contents
+    assert "Smashlet: unnamed" in contents
 
 
 def test_add_smashlet_with_context(tmp_path):
@@ -87,14 +87,14 @@ def run(context):
     # Clear log
     log_path.unlink()
 
-    # Run force: only b
+    # Run force: only smashlet_b.py should run
     run_force(str(tmp_path / "smashlet_b.py"))
     assert log_path.read_text().splitlines() == ["b"]
 
     # Clear log again
     log_path.unlink()
 
-    # Run force: all
+    # Run force: all smashlets
     run_force()
     lines = log_path.read_text().splitlines()
     assert "a" in lines and "b" in lines
