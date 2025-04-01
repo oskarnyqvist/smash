@@ -1,7 +1,8 @@
-# init.py
-#
-# Handles project initialization for Smash.
-# Creates a new .smash/ directory in the project root if it doesn't exist.
+"""
+init.py
+Handles project initialization for Smash.
+Creates a new .smash/ directory in the project root if it doesn't exist.
+"""
 
 from pathlib import Path
 from smash_core.log import log

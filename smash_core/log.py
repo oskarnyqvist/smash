@@ -1,7 +1,9 @@
-# log.py
-#
-# Provides a consistent logging function used across Smash.
-# Supports future extensions like timestamps, log levels, or formatting.
+"""
+log.py
+
+Provides a consistent logging function used across Smash.
+Supports future extensions like timestamps, log levels, or formatting.
+"""
 
 LEVEL_PREFIX = {
     "info": "ℹ️ ",

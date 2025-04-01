@@ -1,6 +1,10 @@
-# smash_core/files.py
-#
-# Path-safe helpers for reading, writing, and resolving files using context["cwd"]
+"""
+smash_core/files.py
+
+Path-safe helpers for reading, writing,
+and resolving files using context["cwd"]
+
+"""
 
 from pathlib import Path
 

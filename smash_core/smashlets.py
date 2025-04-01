@@ -1,7 +1,9 @@
-# smashlets.py
-#
-# Responsible for discovering, loading, and executing `smashlet_*.py` files.
-# Supports multiple smashlets per directory. Each file defines its own transformation logic.
+"""
+smashlets.py
+
+Responsible for discovering, loading, and executing `smashlet_*.py` files.
+Supports multiple smashlets per directory. Each file defines its own transformation logic.
+"""
 
 import importlib.util
 import sys

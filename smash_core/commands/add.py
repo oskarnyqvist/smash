@@ -1,7 +1,8 @@
 # add.py
-#
-# Implements the `add` command for creating new smashlet files.
-# Supports multiple templates via the `template` argument.
+"""
+Implements the `add` command for creating new smashlet files.
+Supports multiple templates via the `template` argument.
+"""
 
 from pathlib import Path
 from smash_core.log import log

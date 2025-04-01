@@ -1,7 +1,9 @@
-# context_loader.py
-#
-# Loads and builds the full execution context for Smash builds and smashlets.
-# Merges global context, local context, and optional `smash.py` logic.
+"""
+context_loader.py
+
+Loads and builds the full execution context for Smash builds and smashlets.
+Merges global context, local context, and optional `smash.py` logic.
+"""
 
 import json
 from pathlib import Path

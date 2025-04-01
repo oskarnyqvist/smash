@@ -1,7 +1,10 @@
-# smash_core/helpers.py
-#
-# Built-in utility functions for smashlets.
-# These are exposed via `from smash.helpers import ...`
+"""
+smash_core/helpers.py
+
+Built-in utility functions for smashlets.
+These are exposed via `from smash.helpers import ...`
+"""
+
 import hashlib
 from pathlib import Path
 

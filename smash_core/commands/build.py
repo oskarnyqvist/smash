@@ -1,6 +1,7 @@
-# build.py
-#
-# Implements the main Smash build loop and the `run` (force) command.
+"""
+build.py
+Implements the main Smash build loop and the `run` (force) command.
+"""
 
 from pathlib import Path
 from smash_core.project import find_project_root

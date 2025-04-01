@@ -1,6 +1,7 @@
-# status.py
-#
-# Implements the `smash status` command for dry-run build status reporting.
+"""
+status.py
+Implements the `smash status` command for dry-run build status reporting.
+"""
 
 from pathlib import Path
 import time

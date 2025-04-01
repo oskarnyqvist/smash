@@ -1,7 +1,9 @@
-# project.py
-#
-# Handles project-level state and metadata.
-# Includes logic for locating the project root and managing the runlog.
+"""
+project.py
+
+Handles project-level state and metadata.
+Includes logic for locating the project root and managing the runlog.
+"""
 
 import json
 import time
