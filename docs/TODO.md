@@ -2,181 +2,6 @@
 
 Generated from `todo/backlog/`
 
-## Add context docs
-
-Absolutely — here’s a complete task story for generating `docs/context.md` from a smashlet, ready for your backlog:
-
----
-
-## 📄 `[Docs] Add smashlet to generate context documentation (docs/context.md)`
-
-### What it does
-
-Creates a smashlet that generates `docs/context.md`, explaining how the `context` object works in Smash. It covers project-level and smashlet-local context files, file formats, override rules, and usage examples.
-
----
-
-### Why it matters
-
-- `context` is one of the most important ideas in Smash
-- Contributors and LLMs need a clear mental model for how data is injected into smashlets
-- Makes workflows more predictable and configurable
-- Aligns with Smash’s philosophy: **clear, local, explicit**
-
----
-
-### Output
-
-Generates a Markdown file like:
-
-```markdown
-# 🧠 Smash Context
-
-The `context` object is passed to `run(context)`...
-
-## Project-level context
-
-...
-
-## Smashlet-local context
-
-...
-
-## File types
-
-...
-
-## Example
-
-...
-```
-
----
-
-### Source
-
-The smashlet itself can be hardcoded — no dynamic scanning needed.
-
-Later improvements might:
-
-- Auto-document actual keys used by the project
-- Detect presence of `context/` folders
-- List `.json` files found in root and smashlet dirs
-
----
-
-### Verification
-
-- Run the smashlet → creates or updates `docs/context.md`
-- Contents should include:
-  - Description of `context`
-  - Examples of usage
-  - Table of supported file types
-  - Notes on override behavior
-
----
-
-### Suggested filename
-
-```
-generate_context_docs.md
-```
-
-Let me know if you want a companion smashlet that outputs this now.
-
----
-
-## Add context file support
-
-## 📄 `[Core] Support contextual overrides via context/ and context.json`
-
-### What it does
-
-Adds support for contextual files located at two levels:
-
-1. **Project-level context**
-
-   - `context/` folder or `context.json` at the project root
-   - Injected into every smashlet’s `context["context_files"]` or `context["context"]`
-
-2. **Smashlet-local context**
-   - A `context/` folder or `context.json` in the **same directory** as a smashlet
-   - Injected _only when that smashlet runs_
-
-Both are available in the `context` dict passed to `run(context)`.
-
----
-
-### Why it matters
-
-- Smashlets should not have to hardcode config or metadata
-- Locality is a core Smash principle — this makes context injection _local-first_
-- Enables flexible workflows:
-  - Project-wide config
-  - Smashlet-specific prompts, inputs, tokens, etc.
-
----
-
-### How it works
-
-```python
-# Directory: project_root/content/tasks/
-# Files: smashlet.py, context/config.json
-
-def run(context):
-    config = context["context"]["config"]
-```
-
-Smash walks:
-
-- `project_root/context/*.json` or `.txt`, `.yaml`, etc.
-- `smashlet_dir/context/`
-- `smashlet_dir/context.json`
-
-Injects as:
-
-```python
-context["context"]         # dict of loaded data (JSON)
-context["context_files"]   # raw Path objects keyed by filename
-```
-
----
-
-### Precedence and merging
-
-- Project context is loaded first
-- Smashlet-local context can override keys
-- If multiple JSON files exist, they are shallow-merged
-
----
-
-### File support
-
-| Extension | Behavior                                   |
-| --------- | ------------------------------------------ |
-| `.json`   | `json.loads()`                             |
-| `.yaml`   | if PyYAML is available                     |
-| `.txt`    | `.read_text()`                             |
-| other     | included as `Path` in `context_files` only |
-
----
-
-### Verification
-
-- Put a `context/config.json` in project root → available to all
-- Put a `context.json` next to a smashlet → available only to that one
-- Combine both → smashlet-local overrides project-level
-
----
-
-### Suggested filename
-
-```
-add_context_file_support.md
-```
-
----
-
 ## Add default helpers
 
 ## [Core] Add default helper functions (`smash.helpers`)
@@ -282,95 +107,79 @@ def write(relative_path: str, data: str, context) -> None:
 
 ---
 
-## Add run command for force
+## Add pypi publish script
 
-## 📄 `[Core] Add 'smash run' command to force re-running all smashlets`
+## 📄 `[Infra] Add script for deploying Smash to PyPI`
 
 ### What it does
 
-Adds a `run` subcommand to the Smash CLI that forces **all** smashlets to run, regardless of timestamp or skip logic.
-
-Also supports `smash run path/to/smashlet.py` to run a **specific** smashlet.
+Adds a simple, reproducible script that builds and uploads the current version of Smash to [PyPI](https://pypi.org/), making it installable via `pip install smash`.
 
 ---
 
 ### Why it matters
 
-- Enables manual control when debugging or developing a smashlet
-- Avoids needing to modify files or clear runlogs just to re-run logic
-- Clear mental model: `smash = smart build`, `smash run = run everything`
+- Simplifies publishing new versions
+- Makes versioning and releases consistent
+- Encourages safer, repeatable releases
+- Allows LLMs (and humans) to trace version history more easily
 
 ---
 
-### CLI Behavior
+### What to include
+
+✅ A script like `scripts/publish.sh`:
 
 ```bash
-# Run only what's changed (default)
-smash
+#!/bin/bash
+set -e
 
-# Force all smashlets to run
-smash run
+# Clean previous builds
+rm -rf dist/ build/ *.egg-info
 
-# Run a specific smashlet, regardless of input timestamps
-smash run content/tasks/smashlet.py
+# Build package
+python3 -m build
+
+# Upload to PyPI (requires `twine`)
+twine upload dist/*
 ```
+
+✅ Optionally add `scripts/publish_test.sh` for TestPyPI.
 
 ---
 
-### Implementation hints
+### Requirements
 
-- Add a `run` subcommand to `cli.py`
-- In `commands.py`, add a new `run_force()` function:
-  - If no path is given → force all smashlets
-  - If a path is given → run that one smashlet directly
-- Skip `should_run()` and call `run_smashlet()` directly
+Make sure these are added to `dev-dependencies` (e.g., in `pyproject.toml` or `requirements-dev.txt`):
+
+```toml
+[tool.poetry.dev-dependencies]
+build = "*"
+twine = "*"
+```
+
+Or for pip-based workflows:
+
+```
+pip install build twine
+```
 
 ---
 
 ### Verification
 
-- Create a smashlet with unchanged inputs
-- Run `smash` → should be skipped
-- Run `smash run` → should re-run
-- Run `smash run path/to/file.py` → should re-run only that file
+Run:
+
+```bash
+./scripts/publish.sh
+```
+
+You should see:
+
+- A wheel + tarball in `dist/`
+- Upload success message from Twine
 
 ---
-
-### Suggested filename
-
-```
-add_run_command_for_force.md
-```
-
----
-
-## Centralized logging
-
-## [Core] Add `smash.log()` for consistent logging
-
-### What it does
-
-Adds a centralized logging function (`smash.log()`) to replace all `print()` usage across the CLI and smashlets.
-
-### Why it matters
-
-Standardizes output across Smash. Makes logs easier to style, parse, or redirect — and prepares for future features like timestamps, log levels, or structured output.
-
-### Hints
-
-- Define `log(msg, *, level="info")` in `smash/log.py`
-- Expose it via `import smash`
-- Replace all internal `print()` calls with `smash.log()`
-- Support optional levels: `"info"`, `"warn"`, `"error"`, `"debug"`
-
-### Example
-
-```python
-import smash
-
-def run():
-    smash.log("Rendering 5 markdown files...")
-```
 
 ---
 
@@ -399,112 +208,6 @@ Allows colocated config, prompts, or metadata to be used in smashlets or `smash.
 ```python
 config = json.loads(context["context_files"]["config.json"].read_text())
 ```
-
----
-
-## Explicit output tracking
-
-## [Core] Support explicit output file tracking
-
-### What it does
-
-Allows smashlets to define the exact output files they generate, so Smash can use this to determine if the smashlet needs to run.
-
-### Why it matters
-
-Currently, Smash only compares input file mtimes with the smashlet file. Explicit outputs would allow:
-
-- More accurate dependency checking
-- Better support for non-globbed outputs
-- Future features like cleaning unused files or dry-run diffs
-
-### Hints
-
-- Add an optional `OUTPUT_FILES` or `get_outputs()` in the smashlet
-- Compare input mtimes vs output mtimes
-- Skip run if all outputs are newer than all inputs
-
-### Example
-
-```python
-def get_outputs():
-    return [Path("dist/index.html"), Path("dist/summary.json")]
-```
-
----
-
-## Fix smashlet mtime tracking
-
-Here you go — full task story written in your project’s style:
-
----
-
-## 📄 `[Core] Fix smashlet mtime tracking to avoid false skips during development`
-
-### What it does
-
-Updates how Smash determines whether a smashlet should run by using the **runlog timestamp** instead of relying on the smashlet file’s own `mtime`.
-
----
-
-### Why it matters
-
-Currently, Smash uses the `mtime` of the smashlet file to decide whether its inputs are “newer.” But during active development, a developer (or LLM) may edit the smashlet file repeatedly — which makes it look like the smashlet is always up-to-date, even though its logic just changed.
-
-This causes confusing behavior:
-
-- Smashlets silently skip when you're trying to test changes
-- Developers need to manually touch inputs or delete the runlog
-- This breaks the development feedback loop and undermines predictability
-
----
-
-### Fix strategy
-
-- Track the **last time the smashlet was successfully run** using the existing runlog (already done in `update_runlog`)
-- Compare this `last_run` time against:
-  - mtime of the smashlet file itself
-  - mtimes of matching input files (via `INPUT_GLOB`)
-- Rerun if **any** of those are newer than the runlog entry
-
----
-
-### Pseudocode
-
-```python
-last_run = runlog.get(smashlet_path, 0)
-needs_rerun = any(
-    file.stat().st_mtime > last_run
-    for file in [smashlet_file] + input_files
-)
-```
-
----
-
-### Side benefits
-
-- Clearer separation between smashlet edit time and execution time
-- Works better with future features like dry runs or caching
-- Avoids overloading file mtimes as semantic flags
-
----
-
-### Verification
-
-- Create a smashlet and some inputs
-- Edit the smashlet → it should rerun even if inputs are unchanged
-- Edit inputs → it should rerun as before
-- After rerun, editing neither → it should be skipped
-
----
-
-### Suggested filename
-
-```
-fix_smashlet_mtime_tracking.md
-```
-
-Let me know if you want a test case or implementation sketch for this too.
 
 ---
 
@@ -666,67 +369,39 @@ generate_function_signatures.md
 
 ---
 
-## Inject inputs in context
+## Refactor docs quality review
 
-## [Core] Automatically pass glob-matched files to `run()`
-
-### What it does
-
-Automatically resolves `INPUT_GLOB` and provides the matched files to the smashlet via `context["inputs"]`.
-
-### Why it matters
-
-Removes repeated glob logic from every smashlet. Reduces boilerplate and makes smashlets easier to write — especially for LLMs.
-
-### Hints
-
-- Only resolve `INPUT_GLOB` if it's defined
-- Inject `context["inputs"]` as a list of `Path` objects before calling `run(context)`
-- Works seamlessly with both `run()` and `run(context)`
-
-### Example
-
-```python
-def run(context):
-    for f in context["inputs"]:
-        ...
-```
-
----
-
-## Replace print with log
-
-## [Infra] Replace raw `print()` with `smash.log()`
+## [Docs] Documentation clarity & cleanup pass
 
 ### What it does
 
-Replaces all direct `print()` calls in Smash core with a centralized `smash.log()` function to standardize output.
+Reviews and refines all existing documentation files:
+
+- `README.md`
+- Files in `docs/` (GUIDE, CODE, TASKS, etc.)
+
+Focus is on improving clarity, reducing redundancy, and removing anything that isn’t up-to-date or essential. We should treat tokens as precious — only say what matters.
+
+Also identifies gaps where examples, behavior, or principles are missing.
 
 ### Why it matters
 
-Centralized logging allows:
+Smash’s philosophy is built on clear thinking and local reasoning.  
+The docs should reflect that: no fluff, no outdated examples, no redundant explanations. Just the right amount of guidance to empower users, contributors, and LLMs.
 
-- Timestamps
-- Log levels
-- Styled or structured output
-- Easier testing, filtering, or redirection
+High-quality docs make Smash easier to adopt, extend, and trust.
 
 ### Hints
 
-- Add `log(msg, level="info")` in `smash/log.py`
-- Replace all `print()` in `smash_core/` with `log(...)`
-- Future support for flags like `--quiet`, `--debug`
+- Start with `README.md` — is everything relevant and current?
+- Review each `docs/*.md` file:
+  - Does it explain intent, not just implementation?
+  - Is anything repeated or unnecessary?
+  - Could it be broken up, renamed, or merged?
+- Are the examples simple and meaningful?
+- Is terminology consistent? (smashlet, context, runlog, etc.)
 
-### Example
-
-```python
-# Instead of this:
-print("✅ Project initialized.")
-
-# Do this:
-import smash
-smash.log("✅ Project initialized.")
-```
+This task can be done in parts — even identifying what needs changing is valuable.
 
 ---
 
@@ -758,40 +433,6 @@ Improves visibility into Smash’s internal logic. Helps developers and LLMs und
 ✅ smashlet_clean.py — last run 2025-03-27 08:03
 ⏳ smashlet_download.py — skipped (timeout not reached)
 ⚙️ smashlet_compile.py — will run (inputs changed)
-
-```
-
----
-
-## Status command
-
-## [Feature] `smash status` command
-
-### What it does
-
-Adds a CLI command that performs a dry run of the build and shows whether each smashlet is up-to-date, will run, or be skipped (with reasons).
-
-### Why it matters
-
-Helps developers understand what Smash is about to do without actually running it. Improves trust, debugging, and automation workflows.
-
-### Hints
-
-- Reuse `should_run()` to determine status
-- For each smashlet, print one line:
-  - ✅ up-to-date
-  - ⚙️ will run
-  - ⏳ skipped (timeout)
-  - ⚠️ skipped (missing INPUT_GLOB or run())
-- Sort by path or timestamp
-
-### Example output
-
-```
-
-⚙️ smashlet_compile.py — will run (inputs changed)
-✅ smashlet_index.py — up to date
-⏳ smashlet_fetch.py — skipped (timeout not reached)
 
 ```
 

@@ -8,6 +8,7 @@ from smash_core.helpers import (
     smash_log,
     ensure_dir,
     flatten_json_dir,
+    write_output_if_changed,
 )
 
 from smash_core.files import (

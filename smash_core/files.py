@@ -7,14 +7,25 @@ from pathlib import Path
 
 def resolve(relative_path, context):
     """
-    Resolve a file path relative to the smashlet's directory.
+    Resolve a file path for use inside a smashlet.
 
-    Uses context["cwd"], with fallback to context["smashlet_dir"].
+    - If `relative_path` starts with '/', it's resolved from the project root
+    - Otherwise, from the smashlet's directory
+
+    `..` and other parts are automatically normalized.
     """
-    cwd = context.get("cwd") or context.get("smashlet_dir")
-    if not cwd:
-        raise ValueError("Context missing 'cwd' or 'smashlet_dir'")
-    return Path(cwd) / relative_path
+    relative_path = str(relative_path)
+
+    if relative_path.startswith("/"):
+        root = context.get("project_root")
+        if not root:
+            raise ValueError("Context missing 'project_root'")
+        return (Path(root) / relative_path[1:]).resolve()
+    else:
+        cwd = context.get("cwd") or context.get("smashlet_dir")
+        if not cwd:
+            raise ValueError("Context missing 'cwd' or 'smashlet_dir'")
+        return (Path(cwd) / relative_path).resolve()
 
 
 def read(relative_path, context):

@@ -2,8 +2,14 @@
 #
 # Built-in utility functions for smashlets.
 # These are exposed via `from smash.helpers import ...`
-
+import hashlib
 from pathlib import Path
+
+from smash_core.files import resolve
+
+
+def get_digest(content):
+    return hashlib.sha1(content.encode("utf-8")).hexdigest()
 
 
 def read_text_files(paths):
@@ -51,3 +57,19 @@ def flatten_json_dir(path):
         except Exception:
             pass
     return result
+
+
+def write_output_if_changed(path, content, context):
+    """
+    Writes `content` to the resolved path only if it differs from what's already there.
+    Returns True if a write occurred (content changed), else False.
+    """
+    out_path = path if isinstance(path, Path) else resolve(path, context)
+    old = out_path.read_text() if out_path.exists() else ""
+
+    if content != old:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(content)
+        return True
+
+    return False

@@ -6,7 +6,6 @@
 from smash import write, resolve
 
 INPUT_GLOB = "backlog/*.md"
-OUTPUT_DIR = "../../docs"
 
 
 def run(context):
@@ -32,6 +31,13 @@ def run(context):
         + "\n"
     )
 
-    write(f"{OUTPUT_DIR}/TODO.md", result, context)
-    print(f"✅ Wrote {len(sections)} tasks to {OUTPUT_DIR}/TODO.md")
-    return 1
+    out_path = resolve("../../docs/TODO.md", context)
+    old = out_path.read_text() if out_path.exists() else ""
+
+    if result != old:
+        write("../../docs/TODO.md", result, context)
+        print(f"✅ Wrote {len(sections)} tasks to TODO.md")
+        return 1
+
+    print("ℹ️ TODO.md already up to date.")
+    return 0
