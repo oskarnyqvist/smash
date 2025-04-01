@@ -9,18 +9,19 @@ import argparse
 from smash_core.commands import run_init
 from smash_core.commands import run_build, run_force
 from smash_core.commands import run_add_smashlet
+from smash_core.commands.status import run_status  # 👈 new import
 
 
 def main():
     """
     Smash CLI dispatcher.
 
-    Usage:
-      smash init           → Initialize a new Smash project
-      smash build          → Run the build process (default if no command)
-      smash --version      → Show version info
-      smash add [options]  → Create a new smashlet file with boilerplate
-      smash run [path]     → Force-run a specific smashlet or all
+    Commands:
+      smash init         → Initialize a new Smash project
+      smash build        → Run the build process (default)
+      smash add [...]    → Create a new smashlet file
+      smash run [...]    → Force-run smashlets
+      smash status       → Show which smashlets would run (dry-run)
     """
     parser = argparse.ArgumentParser(
         prog="smash", description="Smash – build system for content"
@@ -29,46 +30,22 @@ def main():
 
     subparsers = parser.add_subparsers(dest="command")
 
-    # Init command
     subparsers.add_parser("init", help="Initialize a new Smash project")
-
-    # Build command
     subparsers.add_parser("build", help="Run the build process")
 
-    # Add command
-    add_parser = subparsers.add_parser(
-        "add", help="Create a new smashlet with boilerplate"
-    )
-    add_parser.add_argument(
-        "name",
-        nargs="?",
-        default=None,
-        help="Optional name for the smashlet (e.g., 'render'). If omitted, uses default filename from template.",
-    )
-    add_parser.add_argument(
-        "--template",
-        default="default",
-        help="Template to use for the smashlet (default: 'default'). Options: default, minimal, pandas",
-    )
-    add_parser.add_argument(
-        "--glob", default="*", help="Input glob pattern (default: '*')"
-    )
-    add_parser.add_argument(
-        "--output", default="dist/", help="Output directory (default: 'dist/')"
-    )
-    add_parser.add_argument(
-        "--context", action="store_true", help="Use run(context) instead of run()"
-    )
+    add_parser = subparsers.add_parser("add", help="Create a new smashlet")
+    add_parser.add_argument("name", nargs="?", default=None)
+    add_parser.add_argument("--template", default="default")
+    add_parser.add_argument("--glob", default="*", help="Input glob pattern")
+    add_parser.add_argument("--output", default="dist/", help="Output directory")
+    add_parser.add_argument("--context", action="store_true", help="Use run(context)")
 
-    # Run command for force-running smashlets
-    run_parser = subparsers.add_parser(
-        "run", help="Force run smashlets, bypassing skip logic"
-    )
-    run_parser.add_argument(
-        "smashlet_path",
-        nargs="?",
-        help="Optional path to a specific smashlet to force-run",
-    )
+    run_parser = subparsers.add_parser("run", help="Force run smashlets")
+    run_parser.add_argument("smashlet_path", nargs="?")
+
+    subparsers.add_parser(
+        "status", help="Show smashlet run status (dry run)"
+    )  # 👈 new subcommand
 
     args = parser.parse_args()
 
@@ -86,6 +63,8 @@ def main():
         )
     elif args.command == "run":
         run_force(args.smashlet_path)
+    elif args.command == "status":
+        run_status()
     else:
         parser.print_help()
 
