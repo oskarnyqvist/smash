@@ -1,6 +1,3 @@
-## ✅ Cleaned Up Version of `content/README.md`
-
-```markdown
 # 🧱 content/
 
 This folder contains the **structured source files** for generating documentation using Smash.
@@ -10,6 +7,7 @@ Smashlets in this folder transform local content into markdown files written to 
 ---
 
 ## 📂 Structure
+
 ```
 
 content/
@@ -25,12 +23,12 @@ content/
 
 ## 📄 Files you’ll find here
 
-| Path                        | Purpose                                      |
-|-----------------------------|----------------------------------------------|
-| `backlog/*.md`              | Stories, features, improvements, fixes       |
-| `done/*.md`                 | Tasks that have been implemented             |
-| `to_be_created.md`          | Brainstorm dump or unstructured backlog      |
-| `smashlet.py`               | Renders `docs/TODO.md` from backlog          |
+| Path               | Purpose                                 |
+| ------------------ | --------------------------------------- |
+| `backlog/*.md`     | Stories, features, improvements, fixes  |
+| `done/*.md`        | Tasks that have been implemented        |
+| `to_be_created.md` | Brainstorm dump or unstructured backlog |
+| `smashlet.py`      | Renders `docs/TODO.md` from backlog     |
 
 ---
 
@@ -80,5 +78,3 @@ All generated files are written to:
 ```
 
 This folder is the final destination for all documentation outputs.
-
-```
