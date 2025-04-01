@@ -171,6 +171,114 @@ def run(context):
 
 This eliminates boilerplate in your smashlet and makes it easier to write LLM-friendly or reusable logic.
 
+Perfect — you're now officially on the clean path to a **stable public API** for your smashlets. Here's your next move, step-by-step:
+
+---
+
+## ✅ 1. Fill in `smash/__init__.py` with Public Helpers
+
+Let’s start by re-exporting the useful smashlet-facing utilities. Add this to your new `smash/__init__.py`:
+
+```python
+# smash/__init__.py
+#
+# Public API for smashlets. Use `import smash` inside your smashlets.
+
+from smash_core.helpers import (
+    read_text_files,
+    write_output,
+    smash_log,
+    ensure_dir,
+    flatten_json_dir,
+)
+
+from smash_core.files import (
+    read,
+    write,
+    resolve,
+)
+
+from smash_core.log import log as log_raw
+
+# Aliases for consistent naming in smashlets
+log_step = smash_log
+log = log_raw
+```
+
+Now, inside any smashlet, you can:
+
+```python
+import smash
+
+smash.log_step("Starting transformation")
+text = smash.read("input.md", context)
+smash.write("out/output.md", text.upper(), context)
+```
+
+---
+
+## ✅ 2. Test It Locally (Editable Install)
+
+Install your project in **editable mode** so that Python will pick up the `smash/` package you just created:
+
+```bash
+pip install -e .
+```
+
+Then open a Python shell and verify:
+
+```python
+import smash
+
+smash.read_text_files  # Should work
+smash.log_step("Test")  # Should print something
+```
+
+---
+
+## ✅ 3. Update `setup.cfg` (optional if you're using `find:` correctly)
+
+If `packages = find:` in `setup.cfg` is working, Setuptools will already pick up `smash/` and `smash_core/`.
+
+You can double-check by running:
+
+```bash
+python -m pip list
+```
+
+Or inspecting the `.whl` with:
+
+```bash
+python setup.py sdist bdist_wheel
+```
+
+You should see both `smash` and `smash_core` packages in the `.tar.gz` or `.whl`.
+
+---
+
+### 📦 Public API: `import smash`
+
+When writing smashlets, use `import smash` to access helpful utility functions:
+
+```python
+import smash
+
+smash.log_step("Reading input...")
+text = smash.read("input.md", context)
+smash.write("out/output.md", text.upper(), context)
+```
+
+These are safe, portable, and context-aware. They work regardless of where your smashlet is run from.
+
+Available functions include:
+
+- `smash.read(path, context)`
+- `smash.write(path, data, context)`
+- `smash.resolve(path, context)`
+- `smash.log_step(msg)`
+- `smash.read_text_files(paths)`
+- `smash.ensure_dir(path)`
+
 ### 🧠 Explicit Output Tracking (Optional)
 
 Smashlets can optionally define the exact output files they generate. This allows Smash to skip the smashlet more intelligently by comparing input vs. output modification times.
