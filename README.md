@@ -314,6 +314,37 @@ def run(context):
 
 ---
 
+### 📢 Logging from Smashlets with `smash.log()`
+
+Instead of using `print()`, smashlets can call `smash.log()` for standardized output:
+
+```python
+import smash
+
+def run():
+    smash.log("Generating pages from markdown...")
+```
+
+This ensures all output uses the same style and can support future features like:
+
+- Timestamps
+- Log levels (info, warn, error, debug)
+- Redirected or filtered output
+
+Optional log level:
+
+```python
+smash.log("Missing input file", level="warn")
+smash.log("Build failed", level="error")
+```
+
+This works both in smashlets and helper functions imported from `smash.py`.
+
+````
+
+
+
+---
 ## Project Layout Example
 
 ```plaintext
@@ -331,7 +362,7 @@ myproject/
 │       └── smashlet.py     # Still supported for single-step
 ├── smash.py                # Project-wide config + helpers
 └── smash                   # CLI entry point
-```
+````
 
 Each smashlet is discoverable, isolated, and self-contained.
 

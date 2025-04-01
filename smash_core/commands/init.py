@@ -4,6 +4,7 @@
 # Creates a new .smash/ directory in the project root if it doesn't exist.
 
 from pathlib import Path
+from smash_core.log import log
 
 
 def run_init():
@@ -16,11 +17,11 @@ def run_init():
     smash_dir = project_root / ".smash"
 
     if smash_dir.exists():
-        print("✅ Project already initialized.")
+        log("✅ Project already initialized.")
         return
 
     try:
         smash_dir.mkdir()
-        print("✅ Initialized new Smash project.")
+        log("✅ Initialized new Smash project.")
     except Exception as e:
-        print(f"❌ Failed to create .smash/: {e}")
+        log(f"❌ Failed to create .smash/: {e}", level="error")

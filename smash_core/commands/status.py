@@ -2,11 +2,12 @@
 #
 # Implements the `smash status` command for dry-run build status reporting.
 
-from smash_core.project import find_project_root
-from smash_core.context_loader import build_context
-from smash_core.smashlets import discover_smashlets, load_smashlet_module, get_runlog
 from pathlib import Path
 import time
+from smash_core.project import find_project_root, get_runlog
+from smash_core.context_loader import build_context
+from smash_core.smashlets import discover_smashlets, load_smashlet_module
+from smash_core.log import log
 
 ONE_MINUTE = 60
 RUN_NEVER = 0
@@ -24,7 +25,7 @@ def run_status():
     """
     project_root = find_project_root()
     if not project_root:
-        print("❌ Not inside a Smash project (missing .smash/)")
+        log("❌ Not inside a Smash project (missing .smash/)", level="error")
         return
 
     context = build_context(project_root)
@@ -36,17 +37,17 @@ def run_status():
         mod = load_smashlet_module(path)
 
         if not mod:
-            print(f"⚠️ {rel_path} — skipped (failed to load)")
+            log(f"⚠️ {rel_path} — skipped (failed to load)", level="warn")
             continue
 
         run_func = getattr(mod, "run", None)
         if not callable(run_func):
-            print(f"⚠️ {rel_path} — skipped (no run() function)")
+            log(f"⚠️ {rel_path} — skipped (no run() function)", level="warn")
             continue
 
         input_glob = getattr(mod, "INPUT_GLOB", None)
         if not input_glob:
-            print(f"⚠️ {rel_path} — skipped (missing INPUT_GLOB)")
+            log(f"⚠️ {rel_path} — skipped (missing INPUT_GLOB)", level="warn")
             continue
 
         run_mode = getattr(mod, "RUN", "if_changed")
@@ -55,16 +56,16 @@ def run_status():
         if run_mode == "always":
             timeout = getattr(mod, "RUN_TIMEOUT", ONE_MINUTE)
             if timeout and (time.time() - last_run < timeout):
-                print(f"⏳ {rel_path} — skipped (timeout not reached)")
+                log(f"⏳ {rel_path} — skipped (timeout not reached)")
                 continue
             else:
-                print(f"⚙️ {rel_path} — will run (RUN = 'always')")
+                log(f"⚙️ {rel_path} — will run (RUN = 'always')")
                 continue
 
         input_files = list(path.parent.glob(input_glob))
 
         if not input_files:
-            print(f"⚙️ {rel_path} — will run (no matching inputs)")
+            log(f"⚙️ {rel_path} — will run (no matching inputs)")
             continue
 
         outputs = []
@@ -78,21 +79,21 @@ def run_status():
 
         if outputs:
             if any(not o.exists() for o in outputs):
-                print(f"⚙️ {rel_path} — will run (missing outputs)")
+                log(f"⚙️ {rel_path} — will run (missing outputs)")
                 continue
             latest_output = max(o.stat().st_mtime for o in outputs)
             latest_input = max(
                 [f.stat().st_mtime for f in input_files] + [path.stat().st_mtime]
             )
             if latest_input > latest_output:
-                print(f"⚙️ {rel_path} — will run (inputs changed)")
+                log(f"⚙️ {rel_path} — will run (inputs changed)")
             else:
-                print(f"✅ {rel_path} — up to date")
+                log(f"✅ {rel_path} — up to date")
         else:
             latest = max(
                 [f.stat().st_mtime for f in input_files] + [path.stat().st_mtime]
             )
             if latest > last_run:
-                print(f"⚙️ {rel_path} — will run (inputs changed)")
+                log(f"⚙️ {rel_path} — will run (inputs changed)")
             else:
-                print(f"✅ {rel_path} — up to date")
+                log(f"✅ {rel_path} — up to date")

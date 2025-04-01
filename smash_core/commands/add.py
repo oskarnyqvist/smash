@@ -2,11 +2,10 @@
 #
 # Implements the `add` command for creating new smashlet files.
 # Supports multiple templates via the `template` argument.
-# Currently defaults to a basic template, but is designed to be extended.
 
 from pathlib import Path
+from smash_core.log import log
 
-# Template definitions (can be moved to separate files or modules later)
 TEMPLATES = {
     "default": {
         "filename": "smashlet.py",
@@ -22,7 +21,6 @@ def run({context_signature}):
     pass  # TODO: implement transformation logic
 """,
     },
-    # Example for future template expansion
     "minimal": {
         "filename": "smashlet.py",
         "content": """# {filename}
@@ -71,8 +69,9 @@ def run_add_smashlet(
     """
     tmpl = TEMPLATES.get(template)
     if not tmpl:
-        print(
-            f"❌ Template '{template}' not found. Available templates: {list(TEMPLATES.keys())}"
+        log(
+            f"❌ Template '{template}' not found. Available templates: {list(TEMPLATES.keys())}",
+            level="error",
         )
         return
 
@@ -83,10 +82,7 @@ def run_add_smashlet(
         filename = tmpl["filename"]
         display_name = "unnamed"
 
-    # Determine the run function signature based on context_mode.
     context_signature = "context" if context_mode else ""
-
-    # Format the template content.
     content = tmpl["content"].format(
         filename=filename,
         display_name=display_name,
@@ -97,8 +93,8 @@ def run_add_smashlet(
 
     path = Path.cwd() / filename
     if path.exists():
-        print(f"⚠️  {filename} already exists. Aborting.")
+        log(f"⚠️  {filename} already exists. Aborting.", level="warn")
         return
 
     path.write_text(content)
-    print(f"✅ Created {filename} using template '{template}'.")
+    log(f"✅ Created {filename} using template '{template}'.")

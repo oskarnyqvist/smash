@@ -1,15 +1,11 @@
 # cli.py
 #
 # Smash CLI entry point.
-# Dispatches commands for init, build, add, and run (force) using the refactored modules.
+# Dispatches commands for init, build, add, run (force), and status.
 
 import argparse
-
-# Import commands from refactored modules
-from smash_core.commands import run_init
-from smash_core.commands import run_build, run_force
-from smash_core.commands import run_add_smashlet
-from smash_core.commands.status import run_status  # 👈 new import
+from smash_core.commands import run_init, run_build, run_force, run_add_smashlet
+from smash_core.commands.status import run_status
 
 
 def main():
@@ -43,9 +39,7 @@ def main():
     run_parser = subparsers.add_parser("run", help="Force run smashlets")
     run_parser.add_argument("smashlet_path", nargs="?")
 
-    subparsers.add_parser(
-        "status", help="Show smashlet run status (dry run)"
-    )  # 👈 new subcommand
+    subparsers.add_parser("status", help="Show smashlet run status (dry run)")
 
     args = parser.parse_args()
 
