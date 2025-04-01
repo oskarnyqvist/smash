@@ -3,19 +3,14 @@
 # Renders all task markdown files in `backlog/*.md` into a combined TODO.md.
 # Output is written to the root-level `docs/TODO.md`.
 
-from pathlib import Path
+from smash import write, resolve
 
 INPUT_GLOB = "backlog/*.md"
 OUTPUT_DIR = "../../docs"
 
 
-def run(context={}):
-    cwd = Path(context.get("cwd", "."))
-    out_path = cwd / OUTPUT_DIR / "TODO.md"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-
-    task_dir = cwd / "backlog"
-    task_files = sorted(task_dir.glob("*.md"))
+def run(context):
+    task_files = sorted(resolve("backlog", context).glob("*.md"))
 
     if not task_files:
         print("No task files found.")
@@ -36,7 +31,7 @@ def run(context={}):
         + "\n\n---\n\n".join(sections)
         + "\n"
     )
-    out_path.write_text(result)
 
-    print(f"✅ Wrote {len(sections)} tasks to {out_path.resolve()}")
+    write(f"{OUTPUT_DIR}/TODO.md", result, context)
+    print(f"✅ Wrote {len(sections)} tasks to {OUTPUT_DIR}/TODO.md")
     return 1

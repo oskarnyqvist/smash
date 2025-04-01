@@ -241,6 +241,29 @@ from smash import read_yaml
 
 ---
 
+## 9. `smash` vs `smash_core` — Public API vs Internals
+
+Smash uses a clear split between public and internal code:
+
+- `smash_core/` → internal logic (not for direct use in smashlets)
+- `smash/` → public API that your smashlets should import from
+
+### ✅ Always import from `smash`
+
+If you're writing a smashlet or example code, use:
+
+```python
+from smash import read, write, resolve
+```
+
+This keeps the code portable, stable, and independent of internal structure.
+
+### ❌ Don't import from `smash_core`
+
+Even though helpers like `files.py` live in `smash_core/`, they are **exposed through** `smash/` for safe usage.
+
+This design prevents breakage if internal modules move or change — and keeps smashlets friendly to LLMs and humans alike.
+
 ## Summary
 
 - One file = one transformation unit

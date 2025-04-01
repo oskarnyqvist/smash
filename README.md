@@ -368,6 +368,103 @@ Each smashlet is discoverable, isolated, and self-contained.
 
 ---
 
+Perfect — that’s the correct place for the update, and your snippet looks great. ✅
+
+Now that the code is in place, let’s move to:
+
+---
+
+### Using `smash.files` for Safe File Access
+
+Smash includes a helper module for safely reading, writing, and resolving file paths using the `context` object.
+
+Instead of writing fragile relative paths like:
+
+```python
+Path("backlog/my_task.md").read_text()
+```
+
+You can use:
+
+```python
+from smash.files import read, write, resolve
+
+def run(context):
+    content = read("backlog/my_task.md", context)
+    write("out/summary.md", f"Processed:\n{content}", context)
+
+    full_path = resolve("data/stats.json", context)
+```
+
+This makes your smashlets:
+
+- Safe to run from any working directory
+- Easier for LLMs and devs to understand
+- More portable and testable
+
+All paths are automatically resolved relative to `context["cwd"]`, which always points to the smashlet’s directory.
+
+---
+
+### 🧭 `smash` vs `smash_core`: Which should I import?
+
+If you're writing a **smashlet**, always import from `smash`, not `smash_core`.
+
+Smash separates internal code from public helpers:
+
+| Import From  | Purpose                           |
+| ------------ | --------------------------------- |
+| `smash`      | ✅ Safe, public API for smashlets |
+| `smash_core` | ❌ Internal-only implementation   |
+
+For example:
+
+```python
+# ✅ Do this in your smashlet:
+from smash import read, write, resolve
+
+# ❌ Avoid importing from smash_core directly
+```
+
+Even though many helpers live in `smash_core/` internally, they are exposed through `smash/` to keep your code clean and stable.
+
+This design ensures your smashlets are portable, future-proof, and easy to understand — even if the internals change.
+
+---
+
+### ✅ Step 4: Add to `docs/CODE.md`
+
+Let’s put this under a new section header:
+
+---
+
+````md
+## 🔧 `smash.files` Helpers
+
+Use the built-in `smash.files` module to safely access files relative to the smashlet’s directory:
+
+```python
+from smash.files import read, write, resolve
+```
+````
+
+These functions resolve paths using `context["cwd"]`:
+
+- `resolve(path, context)` → absolute `Path` to the file
+- `read(path, context)` → string contents of the file
+- `write(path, data, context)` → writes a string, creating parent folders
+
+### Why this matters
+
+- Smashlets are often run from outside their folder (e.g. via `smash`)
+- This ensures file I/O works consistently and portably
+- It improves testability and LLM understanding
+
+Prefer these helpers over raw `Path("...")` calls.
+
+`````
+
+
 ### 🪄 **📁 Injecting a `context/` Folder**
 
 Add this new section under **"Shared Project Logic with `smash.py`"**:
@@ -383,7 +480,8 @@ These are injected as:
 
 ```python
 context["context_files"]  # dict[str, Path]
-```
+`````
+
 ````
 
 Each key is the filename, and the value is a `Path` object you can read or parse. This is useful for colocated prompts, configs, or metadata.
@@ -453,3 +551,4 @@ Whether you're a developer or an LLM, this guide helps you ship the right thing.
 ### License
 
 MIT
+````
