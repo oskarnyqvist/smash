@@ -283,13 +283,17 @@ Contributions are welcome — especially:
 
 ## 📚 API Layers in Smash
 
-Smash has three distinct layers of APIs, each with a specific audience and purpose:
+Smash has three distinct API layers — each designed for a specific purpose and audience.
+
+This clear separation makes the system simple to use, safe to extend, and easy to regenerate.
+
+---
 
 ### 🟩 1. Public CLI API
 
-> Accessed via terminal commands like `smash build`, `smash add`
+> Used from the terminal via commands like `smash build`, `smash add`
 
-This is the main user interface for Smash. It includes commands like:
+This is the main interface for using Smash as a tool. It includes:
 
 - `smash init`
 - `smash build`
@@ -297,42 +301,43 @@ This is the main user interface for Smash. It includes commands like:
 - `smash run`
 - `smash status`
 
-These commands are implemented in internal modules but are part of the **public, stable interface** for end users.
+These commands are implemented internally but form a stable, user-facing interface.
 
 ---
 
 ### 🟨 2. Public Smashlet API
 
-> Accessed from inside `smashlet_*.py` files via `from smash import ...`
+> Used inside `smashlet_*.py` files via `from smash import ...`
 
-Smashlets can safely use a small, stable API to handle:
+This API is the safe, supported way to write logic inside smashlets.
+
+It includes:
 
 - File I/O: `read`, `write`, `resolve`
 - Context-aware output: `write_output`, `write_output_if_changed`
 - Logging: `log`, `log_step`
 - Helpers: `read_text_files`, `flatten_json_dir`, etc.
 
-This API is the only import path supported in user-authored smashlets.  
-Do **not** import from `smash_core` directly.
+Smashlets should **only** import from `smash` — never from `smash_core`.
 
 ---
 
 ### 🟥 3. Internal Core API
 
-> Internal to Smash itself, used by contributors or LLM agents extending the framework
+> Used by contributors building or extending Smash itself
 
-Implemented in `smash_core/`, this includes:
+Implemented in `smash_core/`, this layer includes:
 
 - CLI command logic (`commands/*.py`)
-- Build and run logic (`smashlets.py`, `context_loader.py`)
-- Internal helpers (`project.py`, `log.py`, `files.py`)
+- Build engine logic (`smashlets.py`, `context_loader.py`)
+- Core utilities (`project.py`, `files.py`, `log.py`)
 
-These modules are **not stable or public**, and should not be used in smashlets or scripts.
+This code is for internal use only — it’s **not part of the public interface** and may change at any time.
 
 ---
 
-✅ This clear separation keeps user code simple and stable,  
-🧠 while making Smash easy to maintain, extend, and regenerate.
+✅ This separation keeps user code clean and safe,  
+🧠 while making the system easy to evolve, debug, and extend.
 
 
 ### License
