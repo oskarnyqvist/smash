@@ -14,6 +14,8 @@ from pathlib import Path
 
 from .context_loader import load_context_data
 from .project import get_runlog, update_runlog
+from .context_loader import build_context
+from smash_core.log import log as smash_log
 
 # Constants
 ONE_MINUTE = 60  # Default RUN_TIMEOUT for "always" smashlets
@@ -68,7 +70,8 @@ def load_smashlet_module(smashlet_path: Path):
         return mod
 
     except Exception as e:
-        print(f"❌ Failed to load {smashlet_path}: {e}")
+        smash_log(f"Failed to load {smashlet_path}: {e}", "error")
+
         return None
 
 
@@ -96,17 +99,54 @@ def should_run(smashlet_path: Path, project_root: Path) -> bool:
     runlog = get_runlog(project_root)
     last_run = runlog.get(str(smashlet_path), RUN_NEVER)
 
+    # Inject context early if custom should_run exists
+    if hasattr(smashlet_mod, "should_run"):
+        try:
+            context = build_context(project_root)
+            input_glob = getattr(smashlet_mod, "INPUT_GLOB", None)
+            input_files = (
+                list(smashlet_path.parent.glob(input_glob)) if input_glob else []
+            )
+
+            # Inject context fields
+            context.update(
+                {
+                    "cwd": smashlet_path.parent,
+                    "smashlet_mtime": smashlet_path.stat().st_mtime,
+                    "last_run": last_run,
+                    "latest_input_mtime": max(
+                        [f.stat().st_mtime for f in input_files], default=0
+                    ),
+                    "inputs": input_files,
+                }
+            )
+
+            return smashlet_mod.should_run(context)
+
+        except Exception as e:
+            smash_log(f"{smashlet_path.name}: using custom should_run()", level="debug")
+
+            smash_log(
+                f"Error in should_run() of {smashlet_path.name}: {e}", level="warning"
+            )
+
+            return False
+
     # Handle "RUN = 'always'" with optional RUN_TIMEOUT
     if run_mode == "always":
         timeout = getattr(smashlet_mod, "RUN_TIMEOUT", ONE_MINUTE)
         if timeout and (time.time() - last_run < timeout):
-            print(f"⏳ Skipping {smashlet_path.name}: RUN_TIMEOUT not reached")
+            smash_log(
+                f"Skipping {smashlet_path.name}: RUN_TIMEOUT not reached", level="info"
+            )
+
             return False
         return True
 
     # Must have a run() function
     if not hasattr(smashlet_mod, "run"):
-        print(f"⚠️  Skipping {smashlet_path}: no run() function")
+        smash_log(f"Skipping {smashlet_path}: no run() function", level="info")
+
         return False
 
     # Must have an INPUT_GLOB
@@ -160,7 +200,8 @@ def run_smashlet(smashlet_path: Path, project_root: Path, global_context: dict) 
 
     run_func = getattr(smashlet_mod, "run", None)
     if not callable(run_func):
-        print(f"⚠️  Skipping {smashlet_path}: run() is not callable")
+        smash_log(f"Skipping {smashlet_path}: run() is not callable", level="info")
+
         return False
 
     import inspect
@@ -212,7 +253,8 @@ def run_smashlet(smashlet_path: Path, project_root: Path, global_context: dict) 
         return result == 1
 
     except Exception as e:
-        print(f"❌ Error in {smashlet_path}: {e}")
+        smash_log(f"Error in {smashlet_path}: {e}", level="error")
+
         return False
 
 

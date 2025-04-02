@@ -299,3 +299,58 @@ def run(context):
     assert "foo.txt" in lines
     assert "bar.txt" in lines
     assert "ignore.md" not in lines
+
+
+def test_should_run_with_custom_logic_returns_true(tmp_path):
+    smashlet = tmp_path / "smashlet_true.py"
+    smashlet.write_text("""
+INPUT_GLOB = "*.txt"
+def should_run(context):
+    return True
+def run(context):
+    return 1
+""")
+    (tmp_path / "file.txt").write_text("data")
+    assert should_run(smashlet, tmp_path) is True
+
+
+def test_should_run_with_custom_logic_returns_false(tmp_path):
+    smashlet = tmp_path / "smashlet_false.py"
+    smashlet.write_text("""
+INPUT_GLOB = "*.txt"
+def should_run(context):
+    return False
+def run(context):
+    return 1
+""")
+    (tmp_path / "file.txt").write_text("data")
+    assert should_run(smashlet, tmp_path) is False
+
+
+def test_should_run_custom_logic_with_context_values(tmp_path):
+    smashlet = tmp_path / "smashlet_context.py"
+    smashlet.write_text("""
+INPUT_GLOB = "*.txt"
+def should_run(context):
+    assert "last_run" in context
+    assert "smashlet_mtime" in context
+    assert "latest_input_mtime" in context
+    return True
+def run(context):
+    return 1
+""")
+    (tmp_path / "file.txt").write_text("data")
+    assert should_run(smashlet, tmp_path) is True
+
+
+def test_should_run_with_broken_custom_logic(tmp_path):
+    smashlet = tmp_path / "smashlet_broken_logic.py"
+    smashlet.write_text("""
+INPUT_GLOB = "*.txt"
+def should_run(context):
+    raise RuntimeError("fail!")
+def run(context):
+    return 1
+""")
+    (tmp_path / "file.txt").write_text("data")
+    assert should_run(smashlet, tmp_path) is False
