@@ -1,6 +1,8 @@
 """
-build.py
-Implements the main Smash build loop and the `run` (force) command.
+Runs the main Smash build loop and powers the `smash run` command.
+
+Discovers all smashlets, checks if they should run, and executes them in modification-time order.
+Used by the public CLI, but not part of the importable API.
 """
 
 from pathlib import Path

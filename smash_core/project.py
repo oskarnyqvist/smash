@@ -1,8 +1,8 @@
 """
-project.py
+Manages project-level state, including root detection and the runlog.
 
-Handles project-level state and metadata.
-Includes logic for locating the project root and managing the runlog.
+Used internally to locate the project root (`.smash/`) and track when smashlets last ran.
+Not part of the public API.
 """
 
 import json

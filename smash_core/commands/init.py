@@ -1,7 +1,7 @@
 """
-init.py
-Handles project initialization for Smash.
-Creates a new .smash/ directory in the project root if it doesn't exist.
+Handles the `smash init` command by creating a new `.smash/` directory.
+
+Used by the public CLI to initialize a Smash project. Not part of the importable API.
 """
 
 from pathlib import Path

@@ -281,6 +281,60 @@ Contributions are welcome — especially:
 - Plugins for new file types or workflows
 
 
+## 📚 API Layers in Smash
+
+Smash has three distinct layers of APIs, each with a specific audience and purpose:
+
+### 🟩 1. Public CLI API
+
+> Accessed via terminal commands like `smash build`, `smash add`
+
+This is the main user interface for Smash. It includes commands like:
+
+- `smash init`
+- `smash build`
+- `smash add <name>`
+- `smash run`
+- `smash status`
+
+These commands are implemented in internal modules but are part of the **public, stable interface** for end users.
+
+---
+
+### 🟨 2. Public Smashlet API
+
+> Accessed from inside `smashlet_*.py` files via `from smash import ...`
+
+Smashlets can safely use a small, stable API to handle:
+
+- File I/O: `read`, `write`, `resolve`
+- Context-aware output: `write_output`, `write_output_if_changed`
+- Logging: `log`, `log_step`
+- Helpers: `read_text_files`, `flatten_json_dir`, etc.
+
+This API is the only import path supported in user-authored smashlets.  
+Do **not** import from `smash_core` directly.
+
+---
+
+### 🟥 3. Internal Core API
+
+> Internal to Smash itself, used by contributors or LLM agents extending the framework
+
+Implemented in `smash_core/`, this includes:
+
+- CLI command logic (`commands/*.py`)
+- Build and run logic (`smashlets.py`, `context_loader.py`)
+- Internal helpers (`project.py`, `log.py`, `files.py`)
+
+These modules are **not stable or public**, and should not be used in smashlets or scripts.
+
+---
+
+✅ This clear separation keeps user code simple and stable,  
+🧠 while making Smash easy to maintain, extend, and regenerate.
+
+
 ### License
 
 This project is licensed under the MIT License.  

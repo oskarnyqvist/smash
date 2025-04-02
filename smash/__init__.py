@@ -1,6 +1,9 @@
-# smash/__init__.py
-#
-# Public API for smashlets. Use `import smash` inside your smashlets.
+"""
+Public API for writing smashlets.
+
+Exposes helper functions like `read`, `write`, `log`, and `write_output_if_changed`,
+so that smashlets don't need to import from internal modules.
+"""
 
 from smash_core.helpers import (
     read_text_files,

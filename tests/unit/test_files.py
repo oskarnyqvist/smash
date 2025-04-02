@@ -1,6 +1,9 @@
-# tests/unit/test_files.py
-#
-# Unit tests for the smash.files module
+"""
+Tests file I/O helpers used in smashlets: `read`, `write`, and `resolve`.
+
+Verifies that paths are correctly resolved relative to `context["cwd"]`
+and that basic reading and writing behaves as expected.
+"""
 
 import os
 from smash_core.files import read, write, resolve

@@ -1,4 +1,8 @@
-# tests/unit/test_public_api.py
+"""
+Tests that key helper functions are exposed via the public `smash` API.
+
+Checks for presence of `read`, `write`, `log_step`, and `read_text_files`.
+"""
 
 import smash
 

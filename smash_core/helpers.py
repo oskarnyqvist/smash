@@ -1,8 +1,8 @@
 """
-smash_core/helpers.py
+Reusable helper functions for writing smashlets.
 
-Built-in utility functions for smashlets.
-These are exposed via `from smash.helpers import ...`
+Includes logging, directory setup, safe writes, and batch file reading.
+Exposed to users via the public `smash` API.
 """
 
 import hashlib

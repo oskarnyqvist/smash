@@ -1,7 +1,8 @@
 # add.py
 """
-Implements the `add` command for creating new smashlet files.
-Supports multiple templates via the `template` argument.
+Creates new smashlet files from templates, used by the `smash add` CLI command.
+
+Implements the logic behind `smash add`, with support for multiple boilerplate templates.
 """
 
 from pathlib import Path

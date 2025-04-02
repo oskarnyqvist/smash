@@ -1,6 +1,7 @@
 """
-status.py
-Implements the `smash status` command for dry-run build status reporting.
+Implements the `smash status` command to preview which smashlets would run (dry run only).
+
+Used by the public CLI to show up-to-date, outdated, or skipped smashlets without executing them.
 """
 
 from pathlib import Path

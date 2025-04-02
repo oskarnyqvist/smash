@@ -1,8 +1,8 @@
 """
-log.py
+Standard logging utility used across Smash and in smashlets.
 
-Provides a consistent logging function used across Smash.
-Supports future extensions like timestamps, log levels, or formatting.
+Adds consistent emoji prefixes for log levels like info, warn, error, and debug.
+Part of the public smashlet API via `from smash import log`.
 """
 
 LEVEL_PREFIX = {

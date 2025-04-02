@@ -2,7 +2,10 @@
 
 ## smash/
 - `smash/__init__.py`
-     Lines of code: 20
+    Public API for writing smashlets.
+    Exposes helper functions like `read`, `write`, `log`, and `write_output_if_changed`,
+    so that smashlets don't need to import from internal modules.
+     Lines of code: 22
      (Imports: smash_core.files, smash_core.helpers, smash_core.log)
 
 ## smash_core/
@@ -10,8 +13,9 @@
      Lines of code: 7
      (Imports: smash_core.helpers)
 - `smash_core/cli.py`
-    Smash CLI entry point.
-    Dispatches commands for init, build, add, run (force), and status.
+    Command-line entry point for Smash.
+    Parses arguments and dispatches to subcommands like `init`, `build`, `add`, `run`, and `status`.
+    This is the main script run when you type `smash` in the terminal.
      Functions: main
      Lines of code: 55
      (Imports: argparse, smash_core.commands, smash_core.commands.status)
@@ -19,8 +23,8 @@
      Lines of code: 3
      (Imports: add, build, init)
 - `smash_core/commands/add.py`
-    Implements the `add` command for creating new smashlet files.
-    Supports multiple templates via the `template` argument.
+    Creates new smashlet files from templates, used by the `smash add` CLI command.
+    Implements the logic behind `smash add`, with support for multiple boilerplate templates.
      Functions: run_add_smashlet
      Lines of code: 89
      (Imports: pathlib, smash_core.log)
@@ -41,8 +45,9 @@
      Lines of code: 84
      (Imports: pathlib, smash_core.context_loader, smash_core.log, smash_core.project, smash_core.smashlets, time)
 - `smash_core/context_loader.py`
-    Loads and builds the full execution context for Smash builds and smashlets.
-    Merges global context, local context, and optional `smash.py` logic.
+    Loads the full context dictionary used during a Smash build or smashlet run.
+    It merges project-level context files, local override files, and optional logic from `smash.py`.
+    This context is injected into each smashlet’s `run()` function.
      Functions: load_context_data, build_context
      Lines of code: 71
      (Imports: json, pathlib)
@@ -70,10 +75,12 @@
      Lines of code: 39
      (Imports: json, pathlib, time)
 - `smash_core/smashlets.py`
-    Responsible for discovering, loading, and executing `smashlet_*.py` files.
-    Supports multiple smashlets per directory. Each file defines its own transformation logic.
+    This file runs all the `smashlet_*.py` files in the project.
+    It handles finding them, deciding if they need to run (based on inputs, outputs, and timestamps),
+    and executing their `run()` function with the right context.
+    Used by the build system. Not part of the public API.
      Functions: discover_smashlets, load_smashlet_module, should_run, run_smashlet, touch
-     Lines of code: 175
+     Lines of code: 176
      (Imports: context_loader, importlib.util, pathlib, project, sys, time)
 
 ## tests/

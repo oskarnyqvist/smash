@@ -1,8 +1,10 @@
 """
-smashlets.py
+This file runs all the `smashlet_*.py` files in the project.
 
-Responsible for discovering, loading, and executing `smashlet_*.py` files.
-Supports multiple smashlets per directory. Each file defines its own transformation logic.
+It handles finding them, deciding if they need to run (based on inputs, outputs, and timestamps),
+and executing their `run()` function with the right context.
+
+Used by the build system. Not part of the public API.
 """
 
 import importlib.util

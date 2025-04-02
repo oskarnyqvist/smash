@@ -1,8 +1,8 @@
 """
-context_loader.py
+Loads the full context dictionary used during a Smash build or smashlet run.
 
-Loads and builds the full execution context for Smash builds and smashlets.
-Merges global context, local context, and optional `smash.py` logic.
+It merges project-level context files, local override files, and optional logic from `smash.py`.
+This context is injected into each smashlet’s `run()` function.
 """
 
 import json

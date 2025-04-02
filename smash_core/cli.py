@@ -1,7 +1,8 @@
 """
-cli.py
-Smash CLI entry point.
-Dispatches commands for init, build, add, run (force), and status.
+Command-line entry point for Smash.
+
+Parses arguments and dispatches to subcommands like `init`, `build`, `add`, `run`, and `status`.
+This is the main script run when you type `smash` in the terminal.
 """
 
 import argparse

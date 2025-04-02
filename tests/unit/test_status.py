@@ -1,7 +1,8 @@
-# test_status.py
-#
-# Tests for the `smash status` CLI command.
-# Verifies dry-run output reflects actual smashlet conditions.
+"""
+Tests the `smash status` command for dry-run build state reporting.
+
+Verifies that output reflects correct smashlet states: up to date, needs run, or skipped due to timeout.
+"""
 
 import os
 from smash_core.commands.status import run_status

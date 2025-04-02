@@ -1,4 +1,8 @@
-# tests/unit/test_project.py
+"""
+Tests project-level helpers for root detection and runlog tracking.
+
+Covers `find_project_root()`, `get_runlog()`, and `update_runlog()` in typical project setups.
+"""
 
 import os
 import json

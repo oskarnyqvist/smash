@@ -1,6 +1,8 @@
-# test_log.py
-#
-# Unit tests for the log() function in smash_core.log.
+"""
+Tests the `log()` function's output formatting for different log levels.
+
+Ensures correct emoji prefixes for "info", "warn", "error", "debug", and fallback cases.
+"""
 
 import io
 import sys

@@ -1,9 +1,8 @@
 """
-smash_core/files.py
+Provides path-safe `read`, `write`, and `resolve` functions for use in smashlets.
 
-Path-safe helpers for reading, writing,
-and resolving files using context["cwd"]
-
+These functions interpret paths relative to the smashlet's directory (`context["cwd"]`) or project root.
+Exposed to users via the public `smash` API.
 """
 
 from pathlib import Path
