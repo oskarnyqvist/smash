@@ -1,61 +1,71 @@
-# 🧭 **Smash Task Analysis Protocol (for LLM or Human)**
+# 🧭 Smash Task Analysis Protocol (for LLM or Human)
 
-Before starting any work, take a moment to **analyze the task itself** — not just the code.
+## Step 1: Think Before You Build
 
-## 🪜 Step 1: Understand and Evaluate the Task
+Before you touch code, **analyze the task**:
 
-Ask:
+- ❓ What are we changing or introducing?
+- 💥 Why does it matter? What's the pain?
+- 🎯 What's the right interface or behavior?
+- 🧪 How will we test it?
+- 🧱 Does this align with Smash's values (local-first, clear, Pythonic)?
+- 🔁 Is it backwards-compatible? Can it break anything?
 
-### ✅ 1. Does the task make sense?
-
-- Is the goal clear and actionable?
-- Is the problem real or hypothetical?
-- Is there enough context to implement it?
-
-### ✅ 2. Is the scope reasonable?
-
-- Could this be completed in a single commit or focused session?
-- Is it actually _two or more_ separate problems bundled into one?
-
-### ✅ 3. Does the task align with project goals and architecture?
-
-- Does it follow Smash’s values: locality, predictability, clarity?
-- Is the proposed solution out of sync with how things are structured?
+Use this to **clarify intent and scope**, not to write a long document.
 
 ---
 
-## 🪜 Step 2: Decide what to do with the task
+## Step 2: Write a Dense, Focused Story
 
-Once you’ve evaluated the task, choose one of these paths:
+After you've thought it through, write the task as a **clear, single-purpose unit of work**.
 
-| Action          | When to choose it                                          | What to do                                    |
-| --------------- | ---------------------------------------------------------- | --------------------------------------------- |
-| ✅ **Continue** | Task is clear, scoped, and actionable                      | Start implementation                          |
-| 🛠️ **Refine**   | Task is mostly good, but needs clarification or an example | Ask for details; rewrite story                |
-| ✂️ **Split**    | Task is valid but tackles multiple things                  | Break it into atomic sub-tasks                |
-| ❌ **Reject**   | Task is stale, unclear, or fundamentally flawed            | Mark as obsolete or refile with a better spec |
+### ✅ A good task story should:
 
----
-
-## 🧠 Use these Red Flags to Trigger a Split or Rewrite
-
-- "And also..." tasks with multiple verbs/goals
-- Missing examples or expected behavior
-- Vague descriptions like “add support for X” with no details
-- Global refactors without clear motivation
-- Tasks that imply architectural changes without context
+- Fit in one focused commit or PR
+- Be specific about behavior, inputs/outputs, and rules
+- Avoid vague verbs like “support”, “handle”, “improve”
+- Skip fluff — just say what should exist and how it should work
 
 ---
 
-# ✅ Final Checklist for Every Task
+### ✅ Example (Concise Style)
 
-Before starting:
+> TASK: Add detailed per-smashlet runlog metadata
+>
+> Extend `.smash/runlog.json` to store:
+>
+> - `last_run`: timestamp
+> - `last_skip`: timestamp
+> - `runs`: count
+>
+> Treat float values as `last_run` for legacy support.  
+> On run: set `last_run`, increment `runs`.  
+> On skip: update `last_skip`.
+>
+> Add tests for structured vs legacy formats, skip vs run behavior.
 
-1. What is this changing or introducing?
-2. Why does it matter — what pain is it solving?
-3. What’s the best interface or design for this?
-4. How will this be validated or tested?
-5. Does this fit Smash’s core philosophy?
-6. Could it break anything? Is it backward compatible?
-7. Is the task itself usable?
-   - If not, refine it, split it, or reject it.
+---
+
+## Step 3: Split, Refine, or Reject if Needed
+
+Use this table when evaluating task proposals:
+
+| Action          | When to choose it                               |
+| --------------- | ----------------------------------------------- |
+| ✅ **Continue** | Task is clear, scoped, and actionable           |
+| 🛠️ **Refine**   | Task needs clarification or concrete behavior   |
+| ✂️ **Split**    | Task tackles multiple things at once            |
+| ❌ **Reject**   | Task is stale, vague, or not aligned with goals |
+
+---
+
+## Red Flags to Watch For
+
+- "And also..." tasks with multiple goals
+- Vague requests ("add support for X")
+- Global refactors without motivation
+- Tasks that imply major changes without context
+
+---
+
+✅ **Think deeply. Write tightly. Build clearly.**
