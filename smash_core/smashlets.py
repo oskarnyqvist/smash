@@ -75,109 +75,135 @@ def load_smashlet_module(smashlet_path: Path):
         return None
 
 
+SMASHLET_CONSTANT_DEFAULTS = [
+    {
+        "name": "RUN",
+        "default": "if_changed",
+        "allowed": ["if_changed", "always"],
+    },
+    {
+        "name": "RUN_TIMEOUT",
+        "default": 60,
+        "allowed": [],
+    },
+    {
+        "name": "INPUT_GLOB",
+        "default": None,
+        "allowed": [],
+    },
+    {
+        "name": "OUTPUT_FILES",
+        "default": [],
+        "allowed": [],
+    },
+]
+
+SMASHLET_REQUIRED_FUNCTIONS = [
+    {"name": "run", "required": True},
+    {"name": "should_run", "required": False},
+    {"name": "get_outputs", "required": False},
+]
+
+
 def should_run(smashlet_path: Path, project_root: Path) -> bool:
     """
-    Determine if a smashlet should run, based on:
-      - RUN mode (default: 'if_changed')
-      - Input file and smashlet modification timestamps
-      - Optional explicit output file tracking
-      - Runlog timestamp of last execution
-      - RUN_TIMEOUT for 'always' smashlets
+    Determine whether a smashlet should run.
 
-    Args:
-        smashlet_path (Path): Path to the smashlet file
-        project_root (Path): Root path of the project
-
-    Returns:
-        bool: True if the smashlet should be run, False otherwise
+    Decisions are based on:
+    - Constants like RUN, INPUT_GLOB
+    - Optional should_run(context) override
+    - Timestamp comparisons for inputs and outputs
     """
+
+    # Load the smashlet module
     smashlet_mod = load_smashlet_module(smashlet_path)
     if not smashlet_mod:
+        smash_log(f"{smashlet_path.name}: could not be loaded", level="warn")
         return False
 
-    run_mode = getattr(smashlet_mod, "RUN", "if_changed")
-    runlog = get_runlog(project_root)
-    last_run = runlog.get(str(smashlet_path), RUN_NEVER)
+    # Validate required functions
+    smashlet_functions = {}
+    for entry in SMASHLET_REQUIRED_FUNCTIONS:
+        func = getattr(smashlet_mod, entry["name"], None)
+        if entry["required"] and not callable(func):
+            smash_log(
+                f"{smashlet_path.name}: missing required function '{entry['name']}'",
+                level="warn",
+            )
+            return False
+        smashlet_functions[entry["name"]] = func
 
-    # Inject context early if custom should_run exists
-    if hasattr(smashlet_mod, "should_run"):
+    # Load and validate constants
+    smashlet_constants = {}
+    for const in SMASHLET_CONSTANT_DEFAULTS:
+        value = getattr(smashlet_mod, const["name"], const["default"])
+        if const["allowed"] and value not in const["allowed"]:
+            smash_log(
+                f"{smashlet_path.name}: invalid constant {const['name']}={value}. Allowed: {const['allowed']}",
+                level="warn",
+            )
+            return False
+        smashlet_constants[const["name"]] = value
+
+    # Load runlog info
+    runlog = get_runlog(project_root)
+    last_run = runlog.get(str(smashlet_path), {}).get("last_run", 0)
+
+    # Handle RUN = 'always'
+    if smashlet_constants["RUN"] == "always":
+        timeout = smashlet_constants["RUN_TIMEOUT"]
+        if (time.time() - last_run) >= timeout:
+            return True
+        else:
+            smash_log(f"{smashlet_path.name}: RUN_TIMEOUT not reached", level="debug")
+            return False
+
+    # Load inputs (optional)
+    input_glob = smashlet_constants["INPUT_GLOB"]
+    inputs = list(smashlet_path.parent.glob(input_glob)) if input_glob else []
+
+    # Load outputs (optional)
+    if smashlet_functions.get("get_outputs"):
+        outputs = smashlet_functions["get_outputs"]()
+    else:
+        outputs = [Path(p) for p in smashlet_constants.get("OUTPUT_FILES", [])]
+
+    # should_run(context) override
+    if smashlet_functions.get("should_run"):
         try:
             context = build_context(project_root)
-            input_glob = getattr(smashlet_mod, "INPUT_GLOB", None)
-            input_files = (
-                list(smashlet_path.parent.glob(input_glob)) if input_glob else []
-            )
-
-            # Inject context fields
             context.update(
                 {
                     "cwd": smashlet_path.parent,
+                    "inputs": inputs,
                     "smashlet_mtime": smashlet_path.stat().st_mtime,
                     "last_run": last_run,
                     "latest_input_mtime": max(
-                        [f.stat().st_mtime for f in input_files], default=0
+                        (f.stat().st_mtime for f in inputs), default=0
                     ),
-                    "inputs": input_files,
                 }
             )
-
-            return smashlet_mod.should_run(context)
-
+            return smashlet_functions["should_run"](context)
         except Exception as e:
-            smash_log(f"{smashlet_path.name}: using custom should_run()", level="debug")
-
             smash_log(
-                f"Error in should_run() of {smashlet_path.name}: {e}", level="warning"
+                f"{smashlet_path.name}: error in should_run(context): {e}",
+                level="error",
             )
-
             return False
 
-    # Handle "RUN = 'always'" with optional RUN_TIMEOUT
-    if run_mode == "always":
-        timeout = getattr(smashlet_mod, "RUN_TIMEOUT", ONE_MINUTE)
-        if timeout and (time.time() - last_run < timeout):
-            smash_log(
-                f"Skipping {smashlet_path.name}: RUN_TIMEOUT not reached", level="info"
-            )
-
-            return False
-        return True
-
-    # Must have a run() function
-    if not hasattr(smashlet_mod, "run"):
-        smash_log(f"Skipping {smashlet_path}: no run() function", level="info")
-
-        return False
-
-    # Must have an INPUT_GLOB
-    input_glob = getattr(smashlet_mod, "INPUT_GLOB", None)
-    if not input_glob:
-        return False
-
-    # Collect input files
-    input_files = list(smashlet_path.parent.glob(input_glob))
-
-    # Check for optional output tracking
-    outputs = []
-    if hasattr(smashlet_mod, "get_outputs"):
-        outputs = smashlet_mod.get_outputs()
-    elif hasattr(smashlet_mod, "OUTPUT_FILES"):
-        outputs = [Path(p) for p in smashlet_mod.OUTPUT_FILES]
-
-    # If outputs are declared, use them to decide if rerun is needed
+    # Inputs vs outputs comparison
     if outputs:
-        # If any output doesn't exist, we must run
         if any(not out.exists() for out in outputs):
             return True
 
         latest_output_mtime = max(out.stat().st_mtime for out in outputs)
         latest_input_mtime = max(
-            [f.stat().st_mtime for f in input_files] + [smashlet_path.stat().st_mtime]
+            [f.stat().st_mtime for f in inputs] + [smashlet_path.stat().st_mtime]
         )
         return latest_input_mtime > latest_output_mtime
 
-    # Fallback to runlog-based logic
-    files_to_check = input_files + [smashlet_path]
+    # Fallback: any input newer than last run
+    files_to_check = inputs + [smashlet_path]
     return any(f.stat().st_mtime > last_run for f in files_to_check)
 
 
@@ -194,6 +220,7 @@ def run_smashlet(smashlet_path: Path, project_root: Path, global_context: dict) 
     Returns:
         bool: True if the smashlet indicates an output change (returns 1), else False
     """
+
     smashlet_mod = load_smashlet_module(smashlet_path)
     if not smashlet_mod:
         return False
@@ -240,6 +267,8 @@ def run_smashlet(smashlet_path: Path, project_root: Path, global_context: dict) 
 
     try:
         sig = inspect.signature(run_func)
+        start_time = time.time()
+
         # If run(context) is expected
         if len(sig.parameters) == 1:
             result = run_func(context)
@@ -247,8 +276,11 @@ def run_smashlet(smashlet_path: Path, project_root: Path, global_context: dict) 
             # Otherwise run() with no args
             result = run_func()
 
+        end_time = time.time()
+        duration = round(end_time - start_time, 3)
+
         # Mark it as run in the runlog
-        update_runlog(project_root, smashlet_path)
+        update_runlog(project_root, smashlet_path, duration)
 
         return result == 1
 

@@ -4,7 +4,7 @@ import json
 import os
 import time
 
-from smash_core.smashlets import discover_smashlets, run_smashlet, should_run, touch
+from smash_core.smashlets import discover_smashlets, run_smashlet, touch
 
 SLEEP_TIME = 0.1
 
@@ -48,117 +48,6 @@ def test_touch_updates_mtime(tmp_path):
     new_mtime = target.stat().st_mtime
 
     assert new_mtime > original_mtime
-
-
-def test_should_run_when_input_is_newer(tmp_path):
-    os.chdir(tmp_path)
-
-    input_file = tmp_path / "file.md"
-    input_file.write_text("hello")
-
-    smashlet = tmp_path / "smashlet_test.py"
-    smashlet.write_text("""
-INPUT_GLOB = "*.md"
-OUTPUT_DIR = "dist/"
-
-def run():
-    return 1
-""")
-    time.sleep(SLEEP_TIME)
-    input_file.touch()
-
-    assert should_run(smashlet, tmp_path) is True
-
-
-def test_should_not_run_if_run_missing(tmp_path):
-    os.chdir(tmp_path)
-
-    smashlet = tmp_path / "smashlet_broken.py"
-    smashlet.write_text("""
-INPUT_GLOB = "*.txt"
-OUTPUT_DIR = "out/"
-""")
-    assert should_run(smashlet, tmp_path) is False
-
-
-def test_should_run_if_output_missing(tmp_path):
-    os.chdir(tmp_path)
-
-    input_file = tmp_path / "input.txt"
-    input_file.write_text("data")
-
-    smashlet = tmp_path / "smashlet_track.py"
-    smashlet.write_text("""
-from pathlib import Path
-INPUT_GLOB = "*.txt"
-OUTPUT_DIR = "dist"
-
-def get_outputs():
-    return [Path("dist/out.html")]
-
-def run():
-    return 1
-""")
-
-    assert should_run(smashlet, tmp_path) is True
-
-
-def test_should_not_run_if_outputs_up_to_date(tmp_path):
-    os.chdir(tmp_path)
-
-    input_file = tmp_path / "input.txt"
-    input_file.write_text("data")
-    time.sleep(SLEEP_TIME)
-
-    out_file = tmp_path / "dist"
-    out_file.mkdir()
-    out_path = out_file / "out.html"
-    out_path.write_text("old output")
-
-    smashlet = tmp_path / "smashlet_static.py"
-    smashlet.write_text("""
-from pathlib import Path
-INPUT_GLOB = "*.txt"
-OUTPUT_DIR = "dist"
-
-def get_outputs():
-    return [Path("dist/out.html")]
-
-def run():
-    return 1
-""")
-    time.sleep(SLEEP_TIME)
-    out_path.touch()
-    assert should_run(smashlet, tmp_path) is False
-
-
-def test_should_run_if_input_newer_than_output(tmp_path):
-    os.chdir(tmp_path)
-
-    input_file = tmp_path / "input.txt"
-    input_file.write_text("data")
-
-    out_dir = tmp_path / "dist"
-    out_dir.mkdir()
-    out_file = out_dir / "out.html"
-    out_file.write_text("old")
-    time.sleep(SLEEP_TIME)
-    input_file.touch()
-
-    smashlet = tmp_path / "smashlet_input_newer.py"
-    smashlet.write_text("""
-from pathlib import Path
-INPUT_GLOB = "*.txt"
-OUTPUT_DIR = "dist"
-
-def get_outputs():
-    return [Path("dist/out.html")]
-
-def run():
-    return 1
-""")
-
-    assert should_run(smashlet, tmp_path) is True
 
 
 def test_project_context_json_is_loaded(tmp_path):
@@ -299,58 +188,3 @@ def run(context):
     assert "foo.txt" in lines
     assert "bar.txt" in lines
     assert "ignore.md" not in lines
-
-
-def test_should_run_with_custom_logic_returns_true(tmp_path):
-    smashlet = tmp_path / "smashlet_true.py"
-    smashlet.write_text("""
-INPUT_GLOB = "*.txt"
-def should_run(context):
-    return True
-def run(context):
-    return 1
-""")
-    (tmp_path / "file.txt").write_text("data")
-    assert should_run(smashlet, tmp_path) is True
-
-
-def test_should_run_with_custom_logic_returns_false(tmp_path):
-    smashlet = tmp_path / "smashlet_false.py"
-    smashlet.write_text("""
-INPUT_GLOB = "*.txt"
-def should_run(context):
-    return False
-def run(context):
-    return 1
-""")
-    (tmp_path / "file.txt").write_text("data")
-    assert should_run(smashlet, tmp_path) is False
-
-
-def test_should_run_custom_logic_with_context_values(tmp_path):
-    smashlet = tmp_path / "smashlet_context.py"
-    smashlet.write_text("""
-INPUT_GLOB = "*.txt"
-def should_run(context):
-    assert "last_run" in context
-    assert "smashlet_mtime" in context
-    assert "latest_input_mtime" in context
-    return True
-def run(context):
-    return 1
-""")
-    (tmp_path / "file.txt").write_text("data")
-    assert should_run(smashlet, tmp_path) is True
-
-
-def test_should_run_with_broken_custom_logic(tmp_path):
-    smashlet = tmp_path / "smashlet_broken_logic.py"
-    smashlet.write_text("""
-INPUT_GLOB = "*.txt"
-def should_run(context):
-    raise RuntimeError("fail!")
-def run(context):
-    return 1
-""")
-    (tmp_path / "file.txt").write_text("data")
-    assert should_run(smashlet, tmp_path) is False

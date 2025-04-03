@@ -38,12 +38,24 @@ def test_get_runlog_parses_existing_json(tmp_path):
     smash_dir.mkdir()
 
     runlog_path = smash_dir / "runlog.json"
-    runlog_path.write_text(json.dumps({"smashlet_foo.py": 1234567890}))
+    runlog_path.write_text(
+        json.dumps(
+            {
+                "smashlet_foo.py": {
+                    "last_run": 1234567890,
+                    "runs": 1,
+                    "history": [{"finished_on": 1234567890}],
+                }
+            }
+        )
+    )
 
     os.chdir(tmp_path)
     runlog = get_runlog(tmp_path)
-
-    assert runlog["smashlet_foo.py"] == 1234567890
+    entry = runlog["smashlet_foo.py"]
+    assert entry["last_run"] == 1234567890
+    assert entry["runs"] == 1
+    assert len(entry["history"]) == 1
 
 
 def test_update_runlog_adds_or_updates_entry(tmp_path):
@@ -61,5 +73,12 @@ def test_update_runlog_adds_or_updates_entry(tmp_path):
 
     runlog = json.loads(runlog_path.read_text())
     assert str(fake_smashlet) in runlog
-    assert isinstance(runlog[str(fake_smashlet)], int)
-    assert runlog[str(fake_smashlet)] <= int(time.time())
+    entry = runlog[str(fake_smashlet)]
+    assert isinstance(entry, dict)
+    assert "last_run" in entry
+    assert "runs" in entry
+    assert "history" in entry
+    assert isinstance(entry["history"], list)
+
+    entry = runlog[str(fake_smashlet)]
+    assert entry["last_run"] <= int(time.time())

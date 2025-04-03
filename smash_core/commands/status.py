@@ -53,7 +53,8 @@ def run_status():
             continue
 
         run_mode = getattr(mod, "RUN", "if_changed")
-        last_run = runlog.get(str(path), RUN_NEVER)
+        entry = runlog.get(str(path))
+        last_run = entry["last_run"] if entry else RUN_NEVER
 
         if run_mode == "always":
             timeout = getattr(mod, "RUN_TIMEOUT", ONE_MINUTE)

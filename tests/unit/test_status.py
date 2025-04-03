@@ -6,6 +6,8 @@ Verifies that output reflects correct smashlet states: up to date, needs run, or
 
 import os
 from smash_core.commands.status import run_status
+import json
+import time
 
 
 def test_status_output(tmp_path, capsys):
@@ -14,11 +16,20 @@ def test_status_output(tmp_path, capsys):
     # Simulate a Smash project
     (tmp_path / ".smash").mkdir()
 
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (smashlet_1_output := dist_dir / "output.txt").write_text("dummy")
+    smashlet_1_output.touch()
+
     # ✅ smashlet_up_to_date
     smashlet_1 = tmp_path / "smashlet_up.py"
     smashlet_1.write_text("""
+from pathlib import Path
 INPUT_GLOB = "*.txt"
 OUTPUT_DIR = "dist/"
+
+def get_outputs():
+    return [Path("dist/output.txt")]
 
 def run(context):
     return 0
@@ -46,23 +57,50 @@ def run(context):
     return 0
 """)
 
-    # create an input file
     input_file = tmp_path / "input.txt"
     input_file.write_text("test")
 
-    # simulate runlog with timestamps
+    # Touch all smashlet files after inputs are created
+    time.sleep(0.1)
+    smashlet_1.touch()
+    time.sleep(0.2)
+    smashlet_1_output.touch()
+    smashlet_2.touch()
+    smashlet_3.touch()
+
+    # Ensure mtime is definitely older than runlog
+    time.sleep(0.2)
+    now = int(time.time())
+
     runlog_path = tmp_path / ".smash" / "runlog.json"
-    runlog_path.write_text(f"""{{
-        "{smashlet_1}": 9999999999,
-        "{smashlet_2}": 0,
-        "{smashlet_3}": 9999999999
-    }}""")
+    runlog_path.write_text(
+        json.dumps(
+            {
+                str(smashlet_1): {
+                    "last_run": now,
+                    "runs": 1,
+                    "history": [{"finished_on": now}],
+                },
+                str(smashlet_2): {
+                    "last_run": 0,
+                    "runs": 1,
+                    "history": [{"finished_on": 0}],
+                },
+                str(smashlet_3): {
+                    "last_run": now,
+                    "runs": 1,
+                    "history": [{"finished_on": now}],
+                },
+            }
+        )
+    )
 
     # Execute dry-run status check
     run_status()
 
     # Capture the printed output
     output = capsys.readouterr().out
+    print(output)
 
     assert "✅ smashlet_up.py — up to date" in output
     assert "⚙️ smashlet_changed.py — will run" in output
