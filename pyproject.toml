@@ -1,10 +1,23 @@
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools>=61", "wheel", "build"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "smash-cli"
+version = "0.2.0"
+description = "A lightweight build system for content"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+  { name = "Oskar Nyqvist", email = "oskar@example.com" }
+]
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra"
-testpaths = ["tests"]
-python_files = "*.py"
+[project.scripts]
+smash = "smash_core.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["smash", "smash_core"]
