@@ -26,18 +26,11 @@ RUN_NEVER = 0  # Default last-run timestamp if not yet run
 
 def discover_smashlets(root: Path):
     """
-    Discover all smashlet files in the project.
+    Finds all valid smashlet files in the project.
 
-    Supports:
-    - smashlet.py
-    - smashlet_<name>.py
-
-    Args:
-        root (Path): Project root path
-
-    Returns:
-        List[Path]: A list of all matching smashlet files across the project
+    Matches files like `smashlet.py` and `smashlet_<name>.py` under the given root.
     """
+
     return [
         p
         for p in root.rglob("smashlet*.py")
@@ -47,17 +40,12 @@ def discover_smashlets(root: Path):
 
 def load_smashlet_module(smashlet_path: Path):
     """
-    Dynamically load a smashlet as a Python module.
+    Dynamically loads a smashlet module so it can be executed.
 
-    Ensures the project root is in sys.path so that smashlets can
-    import modules from the root.
-
-    Args:
-        smashlet_path (Path): Path to the smashlet file
-
-    Returns:
-        module or None: Loaded module object, or None if import fails
+    Ensures the project root is added to `sys.path` so imports work as expected.
+    Returns the loaded module or None if loading fails.
     """
+
     try:
         # Insert the parent of the smashlet's directory (i.e., two levels up)
         project_root_candidate = smashlet_path.parent.parent
@@ -109,12 +97,11 @@ SMASHLET_REQUIRED_FUNCTIONS = [
 
 def should_run(smashlet_path: Path, project_root: Path) -> bool:
     """
-    Determine whether a smashlet should run.
+    Determines whether a smashlet should run based on timestamps, constants, and optional logic.
 
-    Decisions are based on:
-    - Constants like RUN, INPUT_GLOB
-    - Optional should_run(context) override
-    - Timestamp comparisons for inputs and outputs
+    Respects `RUN`, `RUN_TIMEOUT`, and `INPUT_GLOB` constants.
+    Calls `should_run(context)` if defined in the smashlet.
+    Falls back to comparing input/output timestamps and last run time.
     """
 
     # Load the smashlet module
@@ -211,16 +198,10 @@ def should_run(smashlet_path: Path, project_root: Path) -> bool:
 
 def run_smashlet(smashlet_path: Path, project_root: Path, global_context: dict) -> bool:
     """
-    Execute a smashlet's run() function, injecting both global and local context.
-    Automatically updates the runlog after successful execution.
+    Executes a smashlet’s `run()` function with injected context.
 
-    Args:
-        smashlet_path (Path): Path to the smashlet file
-        project_root (Path): Project root path
-        global_context (dict): The global (project-level) context to merge with local
-
-    Returns:
-        bool: True if the smashlet indicates an output change (returns 1), else False
+    Combines global, local, and auto-generated context, including inputs.
+    After execution, updates the runlog and returns True if the smashlet signals a change.
     """
 
     smashlet_mod = load_smashlet_module(smashlet_path)
@@ -294,10 +275,8 @@ def run_smashlet(smashlet_path: Path, project_root: Path, global_context: dict) 
 
 def touch(path: Path):
     """
-    Update the modified timestamp of a file or directory.
-    Used to mark a file as changed without modifying contents.
+    Updates the modification time of a file or directory, like `touch` in Unix.
 
-    Args:
-        path (Path): The file or directory to 'touch'
+    Used to mark outputs as changed without modifying their contents.
     """
     path.touch(exist_ok=True)

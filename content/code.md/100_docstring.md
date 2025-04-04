@@ -74,9 +74,16 @@ Focus on:
 - What the function does
 - Why it exists (if it’s not obvious)
 - Any side effects (e.g. writes files, modifies context)
-- Don't repeat obvious things (e.g., “adds 1 to counter”)
+- **Don’t repeat obvious things** (e.g., “adds 1 to counter”)
+- **Skip entirely if** the name + type hints already make behavior 100% clear
 
-**Example:**
+> These docstrings are also included in `docs/signatures.md`, so write them to be useful in both code and reference tools.
+
+**Prefer short, natural-language summaries** — typically one paragraph, **2–4 lines max**.
+
+---
+
+#### ✅ Good example
 
 ```python
 def update_runlog(project_root, smashlet_path):
@@ -86,6 +93,14 @@ def update_runlog(project_root, smashlet_path):
     Called after `run()` completes. Writes back to `.smash/runlog.json`.
     """
 ```
+
+---
+
+#### 🧠 Tip
+
+If a function is crystal clear from its signature (e.g., `read(path: str) -> str`) and has no side effects, it's okay to leave out the docstring.
+
+When in doubt, include _why_ the function exists or _how_ it's used — especially for anything invoked by the CLI or involved in build logic.
 
 ---
 

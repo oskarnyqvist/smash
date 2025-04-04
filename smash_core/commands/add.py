@@ -60,14 +60,10 @@ def run_add_smashlet(
     name=None, template="default", glob="*", output="dist/", context_mode=False
 ):
     """
-    Create a new smashlet file with boilerplate content.
+    Generates a new smashlet file from a template.
 
-    Args:
-        name (str or None): If provided, creates `smashlet_<name>.py`; otherwise, uses template's default filename.
-        template (str): Template name to use for boilerplate content.
-        glob (str): Glob pattern for inputs (default: "*").
-        output (str): Output directory for results (default: "dist/").
-        context_mode (bool): If True, generate a run signature using `run(context)`, else `run()`.
+    Used by the `smash add` CLI command. Supports custom names, glob patterns, and optional `run(context)` mode.
+    Skips file creation if the target already exists.
     """
     tmpl = TEMPLATES.get(template)
     if not tmpl:

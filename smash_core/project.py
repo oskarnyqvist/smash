@@ -18,10 +18,9 @@ from smash_core.log import log
 
 def find_project_root():
     """
-    Locate the root of the Smash project by walking upward from the current directory.
+    Walks upward from the current directory to find the Smash project root.
 
-    A project is identified by the presence of a `.smash/` directory.
-    Returns None if no root is found.
+    A valid root contains a `.smash/` directory. Returns None if not found.
     """
     p = Path.cwd()
     while p != p.parent:
@@ -33,16 +32,10 @@ def find_project_root():
 
 def get_runlog(project_root):
     """
-    Read and normalize the runlog from `.smash/runlog.json`.
+    Loads and normalizes the `.smash/runlog.json` file.
 
-    Requires entries to be structured dicts:
-    {
-        "last_run": int,
-        "runs": int,
-        "history": [ { "finished_on": int, "duration": float? } ]
-    }
-
-    Ignores legacy flat timestamps. No migration is attempted.
+    Filters out legacy or malformed entries. Keeps at most 10 recent runs per smashlet.
+    Returns a dict keyed by smashlet path with structured run metadata.
     """
     path = project_root / ".smash" / "runlog.json"
     if not path.exists():
@@ -87,6 +80,12 @@ def get_runlog(project_root):
 
 
 def update_runlog(project_root, smashlet_path, finished_on=None, duration=None):
+    """
+    Updates the runlog with a new completed run for the given smashlet.
+
+    Appends a history entry and bumps the run count. Truncates to the 10 most recent runs.
+    Writes the updated `.smash/
+    """
     runlog = get_runlog(project_root)
     key = str(smashlet_path)
     now = int(finished_on or time.time())

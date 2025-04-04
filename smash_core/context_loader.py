@@ -13,12 +13,12 @@ from pathlib import Path
 
 def load_context_data(context_dir: Path):
     """
-    Load context values from a directory or context.json file.
+    Parses context data from a directory or a single `.json` file.
 
-    Returns:
-        merged (dict): Parsed content from .json/.yaml/.txt files
-        paths (dict):   Raw Path objects keyed by filename
+    Supports `.json`, `.yaml`, and `.txt` files. Ignores hidden and unsupported files.
+    Returns a merged context dictionary and a mapping of filenames to Path objects.
     """
+
     merged = {}
     paths = {}
 
@@ -60,15 +60,12 @@ def load_context_data(context_dir: Path):
 
 def build_context(project_root: Path) -> dict:
     """
-    Construct the full build context for Smash execution.
+    Constructs the full context dictionary used by Smash during a build.
 
-    Includes:
-    - Global context/ files (if any)
-    - smash.py config and `on_context()` hook (if present)
-
-    Returns:
-        context (dict): Final merged context
+    Loads global `context/` files and optionally applies hooks from `smash.py` like `on_context()`.
+    Returns the final merged context, including file references and config values.
     """
+
     context = {"project_root": project_root}
 
     # Inject top-level context/ files (if any)
