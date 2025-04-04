@@ -1,4 +1,4 @@
-# add_file_header.py
+# scripts/add_file_header.py
 
 # FILE: add_file_header.py
 
@@ -15,32 +15,35 @@ def should_skip(path):
     )
 
 
-def add_header_to_file(py_file: Path):
+def add_header_to_file(py_file: Path, project_root: Path):
+    rel_path = py_file.relative_to(project_root)
+    correct_header = f"# {rel_path.as_posix()}"
+
     lines = py_file.read_text(encoding="utf-8").splitlines()
 
-    header_line = HEADER_TEMPLATE.format(filename=py_file.name)
+    changed = False
 
-    # Already has correct header?
-    if lines and lines[0].strip() == header_line:
-        return False  # no change
-
-    # Determine if there's a docstring
-    if lines and lines[0].startswith(('"""', "'''")):
-        # Find where the docstring ends
-        end_idx = 0
-        quote = lines[0][:3]
-        for i, line in enumerate(lines[1:], 1):
-            if line.strip().endswith(quote):
-                end_idx = i
-                break
-        # Insert header above docstring
-        new_lines = [header_line, ""] + lines
+    # If file starts with a comment like "# somefile.py"
+    if lines and lines[0].startswith("#"):
+        stripped = lines[0].lstrip("#").strip()
+        if stripped.endswith(py_file.name):
+            # Replace old header if not correct
+            if lines[0].strip() != correct_header:
+                lines[0] = correct_header
+                changed = True
+            else:
+                return False  # already correct
+        else:
+            # First line is a comment but not a file header → prepend
+            lines = [correct_header, ""] + lines
+            changed = True
     else:
-        # Insert header at top
-        new_lines = [header_line, ""] + lines
+        # No header at all → insert it
+        lines = [correct_header, ""] + lines
+        changed = True
 
-    py_file.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
-    return True
+    py_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return changed
 
 
 def main():
@@ -52,7 +55,7 @@ def main():
         if should_skip(py_file.relative_to(project_root)):
             continue
 
-        if add_header_to_file(py_file):
+        if add_header_to_file(py_file, project_root):
             print(f"📝 Updated header: {py_file}")
             changed += 1
 

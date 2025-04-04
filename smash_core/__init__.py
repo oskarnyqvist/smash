@@ -1,4 +1,4 @@
-# __init__.py
+# smash_core/__init__.py
 
 from smash_core.helpers import (
     read_text_files,

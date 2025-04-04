@@ -1,4 +1,4 @@
-# test_log.py
+# tests/unit/test_log.py
 
 """
 Tests the `log()` function's output formatting for different log levels.

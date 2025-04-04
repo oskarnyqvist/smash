@@ -1,4 +1,4 @@
-# test_smashlets.py
+# tests/unit/test_smashlets.py
 
 # tests/unit/test_smashlets.py
 

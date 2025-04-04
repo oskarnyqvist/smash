@@ -1,4 +1,4 @@
-# smashlets.py
+# smash_core/smashlets.py
 
 """
 This file runs all the `smashlet_*.py` files in the project.

@@ -1,4 +1,4 @@
-# files.py
+# smash_core/files.py
 
 """
 Provides path-safe `read`, `write`, and `resolve` functions for use in smashlets.

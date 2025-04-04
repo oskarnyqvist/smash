@@ -1,4 +1,4 @@
-# smashlet.py
+# content/readme_parts/smashlet.py
 #
 # Combines README section fragments into the root-level README.md.
 # Sources come from `*.md` files in this directory, sorted by filename.

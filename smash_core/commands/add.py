@@ -1,4 +1,4 @@
-# add.py
+# smash_core/commands/add.py
 """
 Creates new smashlet files from templates, used by the `smash add` CLI command.
 

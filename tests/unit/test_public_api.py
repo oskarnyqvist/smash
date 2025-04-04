@@ -1,4 +1,4 @@
-# test_public_api.py
+# tests/unit/test_public_api.py
 
 """
 Tests that key helper functions are exposed via the public `smash` API.

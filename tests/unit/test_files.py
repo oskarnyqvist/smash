@@ -1,4 +1,4 @@
-# test_files.py
+# tests/unit/test_files.py
 
 """
 Tests file I/O helpers used in smashlets: `read`, `write`, and `resolve`.

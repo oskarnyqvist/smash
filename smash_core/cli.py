@@ -1,4 +1,4 @@
-# cli.py
+# smash_core/cli.py
 
 """
 Command-line entry point for Smash.

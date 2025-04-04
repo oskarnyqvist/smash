@@ -1,4 +1,4 @@
-# smashlet.py
+# content/files/smashlet.py
 #
 # Generates `docs/FILES.md` — a human- and LLM-readable index of core code files.
 # It focuses on Python files in key directories: smash_core, smash, and tests.

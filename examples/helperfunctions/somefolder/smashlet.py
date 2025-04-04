@@ -1,4 +1,4 @@
-# smashlet.py
+# examples/helperfunctions/somefolder/smashlet.py
 #
 # Smashlet: unnamed
 # Auto-generated with `smash add`

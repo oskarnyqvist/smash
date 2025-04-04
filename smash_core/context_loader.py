@@ -1,4 +1,4 @@
-# context_loader.py
+# smash_core/context_loader.py
 
 """
 Loads the full context dictionary used during a Smash build or smashlet run.

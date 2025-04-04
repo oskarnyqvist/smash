@@ -1,4 +1,4 @@
-# __init__.py
+# smash_core/commands/__init__.py
 
 from .build import run_build, run_force
 from .init import run_init

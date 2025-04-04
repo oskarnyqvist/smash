@@ -1,4 +1,4 @@
-# test_status.py
+# tests/unit/test_status.py
 
 """
 Tests the `smash status` command for dry-run build state reporting.

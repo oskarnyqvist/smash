@@ -1,4 +1,4 @@
-# helpers.py
+# smash_core/helpers.py
 
 """
 Reusable helper functions for writing smashlets.

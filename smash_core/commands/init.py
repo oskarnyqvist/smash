@@ -1,4 +1,4 @@
-# init.py
+# smash_core/commands/init.py
 
 """
 Handles the `smash init` command by creating a new `.smash/` directory.

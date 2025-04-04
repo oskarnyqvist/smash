@@ -1,4 +1,4 @@
-# test_commands.py
+# tests/unit/test_commands.py
 
 """
 Tests the behavior of CLI commands like `smash add`, `smash run`, and `smash build`.

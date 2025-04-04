@@ -1,4 +1,4 @@
-# smashlet.py
+# content/todo/smashlet.py
 #
 # Renders all task markdown files in `backlog/*.md` into a combined TODO.md.
 # Output is written to the root-level `docs/TODO.md`.

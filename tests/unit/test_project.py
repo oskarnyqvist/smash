@@ -1,4 +1,4 @@
-# test_project.py
+# tests/unit/test_project.py
 
 """
 Tests project-level helpers for root detection and runlog tracking.

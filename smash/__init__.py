@@ -1,4 +1,4 @@
-# __init__.py
+# smash/__init__.py
 
 """
 Public API for writing smashlets.

@@ -1,4 +1,4 @@
-# log.py
+# smash_core/log.py
 
 """
 Standard logging utility used across Smash and in smashlets.
