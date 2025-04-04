@@ -95,6 +95,7 @@ def run(context):
     # Determine project root: one level above the current 'content/' directory.
     root = smash.resolve("/..", context)
     grouped = {}
+    header = smash.resolve("header.md", context)
 
     # Walk only the INCLUDE_DIRS directories.
     for dir_name in INCLUDE_DIRS:
@@ -111,7 +112,9 @@ def run(context):
             grouped.setdefault(parent, []).append(rel)
 
     # Build the file overview content.
-    lines = ["# 🗂 File Overview", ""]
+
+    lines = [header.read_text()]
+
     for group in sorted(grouped):
         lines.append(f"## {group}/")
         for file in sorted(grouped[group]):
