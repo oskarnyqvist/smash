@@ -1,27 +1,32 @@
 # 🔍 Function Signatures
 
-This document is automatically generated from the Python source code in `smash_core/`.
+This document is auto-generated from the Python source files in `smash_core/`.
 
-It shows the **top-level public functions** for each file, along with:
+It lists all **top-level public functions**, grouped by file, and includes:
 
 - 🧾 Function signature (name, parameters, return type)
-- 📘 Top 3 lines of the docstring (if present)
-- 📏 Line count
+- 📘 Docstring (if available)
+- 📏 Line count (estimated)
 - 🧠 Static complexity metrics:
-  - Branches (`if` / `else`)
-  - Loops (`for` / `while`)
-  - Calls (other functions used)
+  - Branches (`if`, `else`)
+  - Loops (`for`, `while`)
+  - Function calls
   - Local variables (assignments)
   - Nesting depth
-- ✅ Type hint usage
+- ✅ Type hint presence
 
 Functions starting with `_` are excluded by default.
 
-This reference helps:
+---
 
-- Developers discover available helpers and APIs
-- LLMs understand callable building blocks
-- Contributors identify large, undocumented, or complex code
+## 🧠 How to Use This
+
+- 🔍 Quickly explore available helper functions and internal APIs
+- ⚙️ Understand the shape and complexity of core logic
+- 🧪 Identify functions that may need tests, docs, or refactors
+- 🤖 Give LLMs enough context to rewrite or call safely
+
+> This reference is maintained by `content/signatures/smashlet.py` and updated automatically with `smash`.
 
 ## smash_core/cli.py
 
