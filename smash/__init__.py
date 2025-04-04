@@ -1,3 +1,5 @@
+# __init__.py
+
 """
 Public API for writing smashlets.
 

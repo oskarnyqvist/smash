@@ -1,3 +1,5 @@
+# setup.py
+
 # setup.py (optional)
 import setuptools
 

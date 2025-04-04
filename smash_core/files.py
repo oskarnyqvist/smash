@@ -1,3 +1,5 @@
+# files.py
+
 """
 Provides path-safe `read`, `write`, and `resolve` functions for use in smashlets.
 

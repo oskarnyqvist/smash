@@ -1,3 +1,5 @@
+# status.py
+
 """
 Implements the `smash status` command to preview which smashlets would run (dry run only).
 

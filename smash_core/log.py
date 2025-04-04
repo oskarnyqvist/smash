@@ -1,3 +1,5 @@
+# log.py
+
 """
 Standard logging utility used across Smash and in smashlets.
 

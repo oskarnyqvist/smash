@@ -1,3 +1,5 @@
+# build.py
+
 """
 Runs the main Smash build loop and powers the `smash run` command.
 

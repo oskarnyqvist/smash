@@ -1,3 +1,5 @@
+# project.py
+
 """
 Manages project-level state, including project root detection and runlog persistence.
 

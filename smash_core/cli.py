@@ -1,3 +1,5 @@
+# cli.py
+
 """
 Command-line entry point for Smash.
 
